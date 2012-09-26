@@ -85,11 +85,11 @@ ABRIR_A	MACRO NOM_ARCHIVO, MODO
 ;***********************************************************************************
 ; Macro para leer archivo. 
 ;***********************************************************************************
-LEER_A	MACRO MANEJADOR
+LEER_A	MACRO MANEJADOR, CARACTERES
 	MOV	AH, 3FH			; petición
 	MOV BX, MANEJADOR	; manejador
-	MOV CX, 17			; longitud del registro
-	LEA	DX, LECTURA		; registro donde se leen datos
+	MOV CX, CARACTERES	; longitud del registro
+	LEA	DX, LINEA		; registro donde se leen datos
 	INT 21H
 	ENDM
 ; **********************************************************************************
@@ -146,7 +146,6 @@ MAXLEN 	    DB   13                       				 ; numero maximo de caracteres de 
 ACTLEN 	    DB   0                        				 ; numero real de caracteres de entrada
 DESCRIP	    DB   12 DUP (' ')                            ; caracteres introducidos del teclado
 LINEA	    DB   15 DUP (' '), 0DH, 0AH, '$'
-LECTURA		DB   17 DUP (' ')
 LIMPIA		DB	 15 DUP (' ')							 ; cadena para limpiar línea.
 ENTR1       DB   0DH,0AH,'$'
 NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
@@ -211,7 +210,7 @@ ESCRIBIR_ARCHIVO ENDP
 ; Procedimiento para leer un archivo, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 LEER_ARCHIVO  PROC NEAR
-		  LEER_A MANEJ									 ; Mueve el manejador.
+		  LEER_A MANEJ, N								 ; Mueve el manejador.
 		  JC ERROR1										 ; Prueba por error.
 		  CMP AX, 00									 ; En AX retorna el numero de bytes leidos.
 		  JE ERROR2
@@ -341,11 +340,11 @@ INI:	LEA DX, MSJCADENA
 		CALL MOSTRAR
 		CALL ESCRIBIR_ARCHIVO
 		CERRAR_A MANEJ
+		INC CONT_REG
+		INC CONT_REG1
 		ABRIR_A NOMBRE, 01H
 		JC SALIR
 		MOV_APUN MANEJ, 0, 02H
-		INC CONT_REG
-		INC CONT_REG1
 		CALL LIMPIAR
 		CERRAR_A MANEJ
         RET
@@ -362,7 +361,8 @@ MULTI	PROC NEAR
 		XOR AX, AX
 		MOV  AL, 17
 		MUL OPCION
-		MOV_APUN MANEJ, AX, 00H
+		;MOV_APUN MANEJ, AX, 00H
+		MOV N, AX
 		POP AX
 		RET
 MULTI	ENDP
@@ -377,7 +377,7 @@ PRO2 	PROC NEAR
 		CALL MULTI
 		CALL LEER_ARCHIVO
 		CALL ENTR
-		DESP LECTURA
+		DESP LINEA
 		CERRAR_A MANEJ
         RET
 PRO2 	ENDP
@@ -387,10 +387,9 @@ PRO2 	ENDP
 ;-----------------------------------------------------------------------------------------------------
 PRO3 	PROC NEAR
 		ABRIR_A NOMBRE, 00H
-		XOR CX, CX
-		MOV CX, CONT_REG
-LEER:	CALL LEER_ARCHIVO
-		LOOP LEER
+		MOVM CONT_REG1, OPCION
+		CALL MULTI
+		CALL LEER_ARCHIVO
 		CERRAR_A MANEJ
         RET
 PRO3 	ENDP
