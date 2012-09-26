@@ -12,6 +12,23 @@ TITLE LAB7
 ; Revisiones: 1
 ; 25 de septiembre del 2012
 ;-------------------------------------------------------------------------------------------
+; **********************************************************************************
+CREAR_A	MACRO NOM_ARCHIVO
+	MOV	AH, 3CH			; PETICION
+	MOV	CX, 00			; ATRIBUTO NORMAL
+	LEA DX, NOM_ARCHIVO	; CADENA ASCIIZ
+	INT 21H				; LLAMA AL DOS
+	MOV	MANEJ, AX		; GUARDA EL MANEJADOR
+	ENDM
+; **********************************************************************************
+ESCRIBIR_A	MACRO MANEJADOR, DATOS
+	MOV AH, 40H			; petición para escribir
+	MOV	BX, MANEJADOR	; manejador de archivo
+	MOV CX, 25			; longitud del registro
+	LEA	DX, DATOS		; dirección del área de datos
+	INT	21H				; llama al DOS
+	ENDM
+; **********************************************************************************
 
 .MODEL SMALL
 .STACK 64
@@ -40,7 +57,7 @@ LISTA  	    LABEL BYTE                    				 ; inicio de la lista de parametro
 MAXLEN 	    DB   13                       				 ; numero maximo de caracteres de entrada
 ACTLEN 	    DB   0                        				 ; numero real de caracteres de entrada
 DESCRIP	    DB   12 DUP (' '), 0DH, 0AH, '$'             ; caracteres introducidos del teclado
-LINEA	    DB   14 DUP (' '), 0DH, 0AH, '$'
+LINEA	    DB   15 DUP (' '), 0DH, 0AH, '$'
 ENTR1       DB   0DH,0AH,'$'
 
 SECD    	DB   ' '
@@ -123,19 +140,34 @@ GET_ING   ENDP
 
 CONCA   PROC  NEAR
 		CLD
-		LEA   SI, PRIMD
-		LEA   DI, LINEA
+		LEA    SI, PRIMD
+		LEA    DI, LINEA
 		MOVSB
-		LEA   SI, SECD
+		LEA    SI, SECD
 	    MOVSB
-		LEA   DX, LINEA
-		CALL  MOSTRAR
-		RET
+		MOV    AL, ' '
+		STOSB
+		XOR    CX, CX
+		;CMP    ACTLEN, 0
+		;JE     SALIR
+		MOV    CL, 12
+		LEA    SI, DESCRIP 
+A:		MOVSB
+		LOOP   A
+SALIR:	RET
 CONCA   ENDP
 
 ;Procedimiento de la tabla
 PRO1 	PROC NEAR
+		LEA DX, MSJCADENA
+		CALL MOSTRAR
+		MOV AH, 0AH
+		LEA DX, DESCRIP
+		INT 21H
 		CALL GET_ING
+		CALL ENTR
+		LEA DX, LINEA
+		CALL MOSTRAR
         RET
 PRO1 	ENDP
 
@@ -158,6 +190,7 @@ PRO4	PROC NEAR
 PRO4	ENDP
 
 PRO5	PROC NEAR
+		JMP SALE
 		RET
 PRO5	ENDP
 
@@ -183,7 +216,7 @@ MAIN   PROC FAR
         
 		CALL SALTOS
 		
-        MOV AH, 4CH		;salida al DOS
+SALE:   MOV AH, 4CH		;salida al DOS
 		INT 21H
 
 MAIN   ENDP
