@@ -75,7 +75,7 @@ MOV_APUN MACRO MANEJADOR, REGISTRO, POS
 ;***********************************************************************************
 ABRIR_A	MACRO NOM_ARCHIVO
 	MOV AH, 3DH			; petición
-	MOV AL, 00H			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
+	MOV AL, 02H			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
 	LEA DX, NOM_ARCHIVO	; cadena ASCIIZ
 	INT	21H
 	MOV	MANEJ, AX		; guardar el manejador
@@ -212,7 +212,6 @@ ESCRIBIR_ARCHIVO ENDP
 ; Procedimiento para leer un archivo, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 LEER_ARCHIVO  PROC NEAR
-		  ABRIR_A NOMBRE								 ; Abre el archivo.
 		  LEER_A MANEJ									 ; Mueve el manejador.
 		  JC ERROR1										 ; Prueba por error.
 		  CMP AX, 00									 ; En AX retorna el numero de bytes leidos.
@@ -228,7 +227,7 @@ LEER_ARCHIVO ENDP
 ; Procedimiento para mover el apuntador, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 MOVER_APUNTADOR	PROC NEAR
-		  MOV_APUN MANEJ, CONT_REG
+		  MOV_APUN MANEJ, CONT_REG, 00H
 		  JC FALLO_M									 ; Si hay error, despliega el mensaje de error.
 R4:		  RET
 FALLO_M:  DESP ERROR_M
@@ -339,12 +338,12 @@ INI:	LEA DX, MSJCADENA
 		LEA DX, LINEA
 		CALL MOSTRAR
 		CALL ESCRIBIR_ARCHIVO
-		INC CONT_REG
-		INC CONT_REG1
-		CALL LIMPIAR
 		CERRAR_A MANEJ
 		ABRIR_A NOMBRE
 		MOV_APUN MANEJ, 0, 02H
+		INC CONT_REG
+		INC CONT_REG1
+		CALL LIMPIAR
         RET
 SALIR:	LEA DX, NO_CAD
 		CALL MOSTRAR
@@ -362,9 +361,10 @@ PRO2 	PROC NEAR
 		MOV  AL, 17
 		MUL OPCION
 		MOV_APUN MANEJ, AX, 00H
-		LEER_A MANEJ
+		CALL LEER_ARCHIVO
 		LEA DX, LINEA
 		CALL MOSTRAR
+		DESP LINEA
         RET
 PRO2 	ENDP
 
