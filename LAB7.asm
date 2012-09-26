@@ -100,19 +100,18 @@ REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al u
           CALL  MOSTRAR
           MOV   AH, 01H
           INT   21H
-          SUB   AL, 30H
-          CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
+          CMP   AL, 30h                     ;Se verifica que el ingreso no esté debajo del valor inferior.
           JB    INVALIDO                    ;De estarlo, se repite la petición.
-          CMP   AL, 9                       ;Se verifica que el ingreSo no esté arriba del valor superior.
+          CMP   AL, 39H                     ;Se verifica que el ingreSo no esté arriba del valor superior.
           JA    INVALIDO                    ;De estarlo, se repite la petición.
 		  MOV   PRIMD, AL
           MOV   AH, 01H
           INT   21H
-          SUB   AL, 30H
-          CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
+          CMP   AL, 30h                     ;Se verifica que el ingreso no esté debajo del valor inferior.
           JB    INVALIDO                    ;De estarlo, se repite la petición.
-          CMP   AL, 9                       ;Se verifica que el ingreSo no esté arriba del valor superior.
-          JA    INVALIDO
+          CMP   AL, 39H                     ;Se verifica que el ingreSo no esté arriba del valor superior.
+          JA    INVALIDO                    ;De estarlo, se repite la petición.
+		  MOV   SECD, AL
           CALL  CONCA
           RET                               ;Si se llega aquí, el ingreso el válido.
 INVALIDO: LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
@@ -124,18 +123,12 @@ GET_ING   ENDP
 ;CONCA: Se encarga de concatener los dígitos ingresados para guardarlos como Strings en la cadena correspondiente. 
 
 CONCA   PROC  NEAR
-		ADD   SECD, 30H
-		ADD   PRIMD, 30H
-		MOV   CX, 1
-		LEA   SI, SECD
-		LEA   DI, LINEA
-COP:	MOVSB
-		JMP   COP
-		INC   DI
 		LEA   SI, PRIMD
 		LEA   DI, LINEA
-COPI:	MOVSB
-		JMP   COPI
+		MOVSB
+		INC   DI
+		LEA   SI, SECD
+	    MOVSB
 		LEA   DX, LINEA
 		CALL  MOSTRAR
 		RET
