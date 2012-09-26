@@ -88,12 +88,11 @@ MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 			DB	 ' 4. Borrar articulo   							 ', 0DH, 0AH
 			DB	 ' 5. Salida   										 ', 0DH, 0AH, '$'
 MSJMENU1	DB   'Ingrese el numero de la opcion que desea realizar: ','$'
+MSJMENU2	DB   'Ingrese el Registro a ver: ','$'
+MSJ		    DB   ?
 MSJCADENA   DB   'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
 M_ING   	DB   0DH,0AH,'Ingrese el numero de codigo: $'
 M_INGIN 	DB   0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
-MSJ1     	DB   'Eligio sumar$'
-MSJ2		DB 	 'Eligio restar$'
-MSJ3 		DB   'Eligio multiplicar$' 
 TABLA   	DW   PRO1              ; Tabla de bifurcación con sus tres opciones
 			DW   PRO2
 			DW   PRO3
@@ -110,6 +109,8 @@ NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
 SECD    	DB   ' '
 PRIMD		DB   ' '
 CONT_REG	DW	0
+VAL_SUP		DB  ?
+REGISTRO	DB  ?
 ERROR		DB	'No pudo crearse el archivo$'
 ERROR_E1	DB	'No pudo escribirse en el archivo$'
 ERROR_L1	DB	'No pudo leerse del archivo$'
@@ -139,14 +140,14 @@ ENTR    ENDP
 ; Controla el ingreso de las opciones
 INGRESO   PROC  NEAR
 REP_ING2: CALL  ENTR
-          LEA   DX, MSJMENU1                 ;Imprime la petición de ingreso al usuario.
+          LEA   DX, MSJ                     ;Imprime la petición de ingreso al usuario.
           CALL  MOSTRAR
           MOV   AH, 01H
           INT   21H
           SUB   AL, 30H
           CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
           JB    INVALIDO2                   ;De estarlo, se repite la petición.
-          CMP   AL, 5                       ;Se verifica que el ingreSo no esté arriba del valor superior.
+          CMP   AL, VAL_SUP                 ;Se verifica que el ingreSo no esté arriba del valor superior.
           JA    INVALIDO2
           MOV   OPCION, AL
 		  SUB	OPCION, 1
@@ -203,8 +204,7 @@ CONCA   PROC  NEAR
 		STOSB
 		MOV    CL, ACTLEN
 		LEA    SI, DESCRIP 
-A:		MOVSB
-		LOOP   A
+REP		MOVSB
 		RET
 CONCA   ENDP
 ;----------------------------------------------------------------------------------------------------
@@ -288,8 +288,11 @@ PRO1 	ENDP
 
 ;Procedimiento de la tabla
 PRO2 	PROC NEAR
-		LEA DX, MSJ2
-		CALL MOSTRAR
+		MOV AL, MSJMENU2
+		MOV MSJ, AL
+		MOV  VAL_SUP, CONT_REG
+		CALL INGRESO
+		MOV  AL, OPCION
         RET
 PRO2 	ENDP
 
@@ -328,13 +331,16 @@ MAIN   PROC FAR
 ASD:    LEA    DX, MSJMENU
         CALL   MOSTRAR
         CALL   ENTR
+		MOV   AL, MSJMENU1
+		MOV   MSJ, AL
+		MOV   VAL_SUP, 5
         CALL   INGRESO
 		CALL   ENTR
         
 		CALL SALTOS
 		JMP ASD
 SALE:   CERRAR_A MANEJ
-		MOV AH, 4CH		;salida al DOS
+		MOV AX, 4C00H		;salida al DOS
 		INT 21H
 
 MAIN   ENDP
