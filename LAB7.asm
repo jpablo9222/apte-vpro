@@ -117,6 +117,30 @@ MOVM MACRO SRC, DTN
 	ENDM
 ; **********************************************************************************
 
+;***********************************************************************************
+; Macro para "mover de memoria a memoria".
+;***********************************************************************************
+MOVMW  MACRO SRC, DTN
+	   PUSH AX
+	   MOV AX, SRC
+	   MOV DTN, AX
+	   POP AX
+	ENDM
+; **********************************************************************************
+
+;***********************************************************************************
+; Macro para limpiar una cadena.
+;***********************************************************************************
+LIMPIAR	MACRO CADENA, LONGITUD
+		XOR CX, CX										 ; 
+		MOV CL, LONGITUD
+		CLD
+		LEA SI, LIMPIA
+		LEA DI, CADENA
+REP		MOVSB
+		ENDM
+;***********************************************************************************
+
 .MODEL SMALL
 .STACK 64
 .DATA
@@ -164,6 +188,7 @@ ERROR_L1	DB	0DH,0AH,'No pudo leerse del archivo$'
 ERROR_L2	DB	0DH,0AH,'No se realizo la lectura completa del archivo$'
 ERROR_M		DB	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	0
+REG			DW  ?
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
 .CODE
@@ -235,20 +260,6 @@ FALLO_M:  DESP ERROR_M
 		  JMP R4
 MOVER_APUNTADOR	ENDP		  
 
-;----------------------------------------------------------------------------------------------------
-; Procedimiento para limpiar una cadena.
-;----------------------------------------------------------------------------------------------------
-LIMPIAR	PROC NEAR
-		XOR CX, CX										 ; 
-		MOV CL, 15
-		CLD
-		LEA SI, LIMPIA
-		LEA DI, LINEA
-M:		MOVSB
-		LOOP M
-		RET
-LIMPIAR ENDP
-
 ;-----------------------------------------------------------------------------------------------------
 ; Controla el ingreso de las opciones
 ;-----------------------------------------------------------------------------------------------------
@@ -318,6 +329,7 @@ CONCA   PROC  NEAR
 		MOV    CL, ACTLEN
 		LEA    SI, DESCRIP 
 REP		MOVSB
+		LIMPIAR DESCRIP, 12
 		RET
 CONCA   ENDP
 
@@ -345,7 +357,7 @@ INI:	LEA DX, MSJCADENA
 		CERRAR_A MANEJ
 		INC CONT_REG
 		INC CONT_REG1
-		CALL LIMPIAR
+		LIMPIAR LINEA, 15
         RET
 SALIR:	LEA DX, NO_CAD
 		CALL MOSTRAR
@@ -407,14 +419,15 @@ PRO3 	PROC NEAR
 		ABRIR_A NOMBRE, 00H
 		XOR CX, CX
 		MOV CL, CONT_REG1
-		MOV N, 0
+		MOV  REG, 0
 		CALL ENTR
 		CALL ENTR
 AG:		MOV  RES, CX
+		MOVMW REG, N
 		CALL MULTI
 		CALL LEER_ARCHIVO
 		DESP LECTURA
-		ADD N, 1
+		ADD REG, 1
 		MOV CX, RES
 		LOOP AG
         RET
