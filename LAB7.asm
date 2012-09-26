@@ -63,7 +63,7 @@ CERRAR_A	MACRO MANEJADOR
 MOV_APUN MACRO MANEJADOR, REGISTRO, POS
 	MOV AH, 42H			; Peticion para mover el apuntador
 	MOV	AL, POS 		; 00: inicio, 01: pos actual 02: fin archivo
-	mov	BX, MANEJADOR	; MANEJADOR
+	MOV	BX, MANEJADOR	; MANEJADOR
 	MOV CX, 00H			;
 	MOV	DX, REGISTRO 	; DESPLAZAMIENTO DE n BYTES
 	INT 21H
@@ -131,8 +131,8 @@ MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 			DB	 ' 4. Borrar articulo   							 ', 0DH, 0AH
 			DB	 ' 5. Salida   										 ', 0DH, 0AH, '$'
 MSJMENU1	DB   'Ingrese el numero de la opcion que desea realizar: ','$'
-MSJMENU2	DB   '                        Ingrese el Registro a ver: ','$'
-MSJ			DB   52 DUP (' ')
+M_ING2		DB   0DH,0AH,'Ingrese el Registro a ver: ','$'
+MSJ			DB   31 DUP (' '),'$'
 MSJCADENA   DB   0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
 M_ING   	DB   0DH,0AH,'Ingrese el numero de codigo: $'
 M_INGIN 	DB   0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
@@ -147,10 +147,12 @@ ACTLEN 	    DB   0                        				 ; numero real de caracteres de en
 DESCRIP	    DB   12 DUP (' ')                            ; caracteres introducidos del teclado
 LINEA	    DB   15 DUP (' '), 0DH, 0AH, '$'
 LIMPIA		DB	 15 DUP (' ')							 ; cadena para limpiar línea.
+LECTURA		DB   17 DUP (' ')
 ENTR1       DB   0DH,0AH,'$'
 NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
 SECD    	DB   ' '
 PRIMD		DB   ' '
+RES			DB	?
 CONT_REG	DW	0
 CONT_REG1	DB  0
 VAL_SUP		DB  ?
@@ -210,7 +212,7 @@ ESCRIBIR_ARCHIVO ENDP
 ; Procedimiento para leer un archivo, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 LEER_ARCHIVO  PROC NEAR
-		  LEER_A MANEJ, N								 ; Mueve el manejador.
+		  LEER_A MANEJ, 17								 ; Mueve el manejador.
 		  JC ERROR1										 ; Prueba por error.
 		  CMP AX, 00									 ; En AX retorna el numero de bytes leidos.
 		  JE ERROR2
@@ -252,14 +254,14 @@ LIMPIAR ENDP
 ;-----------------------------------------------------------------------------------------------------
 INGRESO   PROC  NEAR
 REP_ING2: CALL  ENTR
-          LEA   DX, MSJ                     ;Imprime la petición de ingreso al usuario.
+          LEA   DX, MSJMENU1                ;Imprime la petición de ingreso al usuario.
           CALL  MOSTRAR
           MOV   AH, 01H
           INT   21H
           SUB   AL, 30H
-          CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
+          CMP   AL, 1                       ;Se verifica que el ingreso no esté debajo del valor inferior.
           JB    INVALIDO2                   ;De estarlo, se repite la petición.
-          CMP   AL, VAL_SUP                 ;Se verifica que el ingreSo no esté arriba del valor superior.
+          CMP   AL, 5	                    ;Se verifica que el ingreSo no esté arriba del valor superior.
           JA    INVALIDO2
           MOV   OPCION, AL
 		  SUB	OPCION, 1
@@ -278,7 +280,7 @@ INGRESO   ENDP
 ;TOMADO DEL PROYECTO FINAL DE ORGANIZACION DE COMPUTADORAS, AUTORES: Juan Pablo Argueta (yo), Oscar Castaneda
 ;-----------------------------------------------------------------------------------------------------
 GET_ING   PROC  NEAR
-REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al usuario.
+REP_ING:  LEA   DX, MSJ                   ;Imprime la petición de ingreso al usuario.
           CALL  MOSTRAR
           MOV   AH, 01H
           INT   21H
@@ -294,7 +296,6 @@ REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al u
           CMP   AL, 39H                     ;Se verifica que el ingreSo no esté arriba del valor superior.
           JA    INVALIDO                    ;De estarlo, se repite la petición.
 		  MOV   SECD, AL
-          CALL  CONCA
           RET                               ;Si se llega aquí, el ingreso el válido.
 INVALIDO: LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
           CALL  MOSTRAR
@@ -334,7 +335,9 @@ INI:	LEA DX, MSJCADENA
 		XOR CX, CX
 		CMP ACTLEN, 0
 		JE SALIR
+		COPIAR_CAD M_ING, MSJ, 31
 		CALL GET_ING
+		CALL CONCA
 		CALL ENTR
 		LEA DX, LINEA
 		CALL MOSTRAR
@@ -342,11 +345,7 @@ INI:	LEA DX, MSJCADENA
 		CERRAR_A MANEJ
 		INC CONT_REG
 		INC CONT_REG1
-		ABRIR_A NOMBRE, 01H
-		JC SALIR
-		MOV_APUN MANEJ, 0, 02H
 		CALL LIMPIAR
-		CERRAR_A MANEJ
         RET
 SALIR:	LEA DX, NO_CAD
 		CALL MOSTRAR
@@ -360,24 +359,43 @@ MULTI	PROC NEAR
 		PUSH AX
 		XOR AX, AX
 		MOV  AL, 17
-		MUL OPCION
-		;MOV_APUN MANEJ, AX, 00H
+		MUL N
+		MOV N, AX
+		MOV_APUN MANEJ, N, 00H
 		MOV N, AX
 		POP AX
 		RET
 MULTI	ENDP
+
+;-----------------------------------------------------------------------------------------------------
+; Se encarga de realizar las multiplicaciones necesarias para guardar el numero de dos digitos
+;-----------------------------------------------------------------------------------------------------
+
+CONCAD  PROC  NEAR
+		SUB   PRIMD, 30H
+		SUB	  SECD, 30H
+        MOV   AL, 10
+		MUL   PRIMD
+		MOV   N, AX
+		XOR   AX, AX
+		MOV   AL, SECD
+		ADD   N, AX
+		SUB   N, 1
+		RET
+CONCAD  ENDP
 ;-----------------------------------------------------------------------------------------------------
 ;Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO2 	PROC NEAR
 		ABRIR_A NOMBRE, 00H
-		COPIAR_CAD MSJMENU2, MSJ, 52
-		MOVM  CONT_REG1, VAL_SUP 
-		CALL INGRESO
+		COPIAR_CAD M_ING2, MSJ, 31
+		CALL GET_ING
+		CALL CONCAD
 		CALL MULTI
-		CALL LEER_ARCHIVO
 		CALL ENTR
-		DESP LINEA
+		CALL ENTR
+		CALL LEER_ARCHIVO
+		DESP LECTURA
 		CERRAR_A MANEJ
         RET
 PRO2 	ENDP
@@ -429,8 +447,6 @@ MAIN   PROC FAR
 ASD:    LEA    DX, MSJMENU
         CALL   MOSTRAR
         CALL   ENTR
-		COPIAR_CAD MSJMENU1, MSJ, 52
-		MOV   VAL_SUP, 5
         CALL   INGRESO
 		CALL   ENTR
         
