@@ -152,7 +152,7 @@ ENTR1       DB   0DH,0AH,'$'
 NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
 SECD    	DB   ' '
 PRIMD		DB   ' '
-RES			DB	?
+RES			DW	?
 CONT_REG	DW	0
 CONT_REG1	DB  0
 VAL_SUP		DB  ?
@@ -408,12 +408,14 @@ PRO3 	PROC NEAR
 		XOR CX, CX
 		MOV CL, CONT_REG1
 		MOV N, 0
-AG:		CALL MULTI
 		CALL ENTR
 		CALL ENTR
+AG:		MOV  RES, CX
+		CALL MULTI
 		CALL LEER_ARCHIVO
 		DESP LECTURA
 		ADD N, 1
+		MOV CX, RES
 		LOOP AG
         RET
 PRO3 	ENDP
