@@ -45,9 +45,9 @@ CERRAR_A	MACRO MANEJADOR
 	ENDM
 ; **********************************************************************************
 ; **********************************************************************************
-MOV_APUN MACRO MANEJADOR, REGISTRO
+MOV_APUN MACRO MANEJADOR, REGISTRO, POS
 	MOV AH, 42H			; Peticion para mover el apuntador
-	MOV	AL, 00H			; 00: inicio, 01: pos actual 02: fin archivo
+	MOV	AL, POS 		; 00: inicio, 01: pos actual 02: fin archivo
 	mov	BX, MANEJADOR	; MANEJADOR
 	MOV CX, 00H			;
 	MOV	DX, REGISTRO 	; DESPLAZAMIENTO DE n BYTES
@@ -67,7 +67,7 @@ LEER_A	MACRO MANEJADOR
 	PUSH CX
 	MOV	AH, 3FH			; petición
 	MOV BX, MANEJADOR	; manejador
-	MOV CX, 17			; longitud del registro
+	MOV CX, 15			; longitud del registro
 	LEA	DX, LINEA		; registro donde se leen datos
 	INT 21H
 	POP CX
@@ -80,6 +80,13 @@ COPIAR_CAD MACRO SOURCE, DESTINY, LONGITUD
 REP MOVSB
 	ENDM
 
+; **********************************************************************************
+MOVM MACRO SRC, DTN
+	PUSH AX
+	MOV AL, SRC
+	MOV DTN, AL
+	POP AX
+	ENDM
 ; **********************************************************************************
 ABRIR_A	MACRO NOM_ARCHIVO
 	MOV AH, 3DH			; petición
@@ -106,7 +113,7 @@ MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 MSJMENU1	DB   'Ingrese el numero de la opcion que desea realizar: ','$'
 MSJMENU2	DB   'Ingrese el Registro a ver:                         ','$'
 MSJ			DB   52 DUP (' ')
-MSJCADENA   DB   'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
+MSJCADENA   DB   0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
 M_ING   	DB   0DH,0AH,'Ingrese el numero de codigo: $'
 M_INGIN 	DB   0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
 TABLA   	DW   PRO1              ; Tabla de bifurcación con sus tres opciones
@@ -125,9 +132,11 @@ NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
 SECD    	DB   ' '
 PRIMD		DB   ' '
 CONT_REG	DW	0
+CONT_REG1	DB  0
 VAL_SUP		DB  ?
 REGISTRO	DB  ?
 ERROR		DB	'No pudo crearse el archivo$'
+ERROR_E0    DB  'No pudo abrirse el archvio$'
 ERROR_E1	DB	'No pudo escribirse en el archivo$'
 ERROR_L1	DB	'No pudo leerse del archivo$'
 ERROR_L2	DB	'No se realizo la lectura completa del archivo$'
@@ -152,7 +161,69 @@ ENTR	PROC NEAR
 		INT   21H
 		RET
 ENTR    ENDP
+;----------------------------------------------------------------------------------------------------
+CREAR_ARCHIVO PROC NEAR
+		  CREAR_A NOMBRE
+		  JC FALLO		; SI HAY ERROR, SALE
+R1:		  RET
+FALLO:	  DESP ERROR
+		  JMP R1
+CREAR_ARCHIVO ENDP
+;----------------------------------------------------------------------------------------------------
+ABRIR_ARCHIVO PROC NEAR
+		  ABRIR_A NOMBRE
+		  JC FALLO1		; SI HAY ERROR, SALE
+R5:		  RET
+FALLO1:	  DESP ERROR
+		  JMP R5
+ABRIR_ARCHIVO ENDP
+;----------------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------------
+ESCRIBIR_ARCHIVO PROC NEAR
+		  ESCRIBIR_A MANEJ, LINEA
+		  JC ERROR3		; prueba por error
+R3:		  RET
+ERROR3:	  DESP ERROR_E1
+		  JMP R3		  
+ESCRIBIR_ARCHIVO ENDP
+;----------------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------------
+LEER_ARCHIVO  PROC NEAR
+		  ABRIR_A NOMBRE
+		  LEER_A MANEJ
+		  JC ERROR1		; prueba por error
+		  CMP AX, 00		; en AX retorna el numero de bytes leídos
+		  JE ERROR2
+R2:		  RET
+ERROR1:   DESP ERROR_L1
+		  JMP R2
+ERROR2:   DESP ERROR_L2
+		  JMP R2
+LEER_ARCHIVO ENDP
 
+;----------------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------------
+MOVER_APUNTADOR	PROC NEAR
+		  MOV_APUN MANEJ, CONT_REG, 00H
+		  JC FALLO_M			; SI HAY ERROR, SALE
+R4:		  RET
+FALLO_M:  DESP ERROR_M
+		  JMP R4
+MOVER_APUNTADOR	ENDP		  
+
+;----------------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------------
+LIMPIAR	PROC NEAR
+		XOR CX, CX
+		MOV CL, 15
+		CLD
+		LEA SI, LIMPIA
+		LEA DI, LINEA
+M:		MOVSB
+		LOOP M
+		RET
+LIMPIAR ENDP
+;-----------------------------------------------------------------------------------------------------
 ; Controla el ingreso de las opciones
 INGRESO   PROC  NEAR
 REP_ING2: CALL  ENTR
@@ -225,62 +296,6 @@ REP		MOVSB
 CONCA   ENDP
 
 ;----------------------------------------------------------------------------------------------------
-;----------------------------------------------------------------------------------------------------
-CREAR_ARCHIVO PROC NEAR
-		  CREAR_A NOMBRE
-		  JC FALLO		; SI HAY ERROR, SALE
-R1:		  RET
-FALLO:	  DESP ERROR
-		  JMP R1
-CREAR_ARCHIVO ENDP
-
-;----------------------------------------------------------------------------------------------------
-;----------------------------------------------------------------------------------------------------
-ESCRIBIR_ARCHIVO PROC NEAR
-		  ESCRIBIR_A MANEJ, LINEA
-		  JC ERROR3		; prueba por error
-R3:		  RET
-ERROR3:	  DESP ERROR_E1
-		  JMP R3		  
-ESCRIBIR_ARCHIVO ENDP
-;----------------------------------------------------------------------------------------------------
-;----------------------------------------------------------------------------------------------------
-LEER_ARCHIVO  PROC NEAR
-		  ABRIR_A NOMBRE
-		  LEER_A MANEJ
-		  JC ERROR1		; prueba por error
-		  CMP AX, 00		; en AX retorna el numero de bytes leídos
-		  JE ERROR2
-R2:		  RET
-ERROR1:   DESP ERROR_L1
-		  JMP R2
-ERROR2:   DESP ERROR_L2
-		  JMP R2
-LEER_ARCHIVO ENDP
-
-;----------------------------------------------------------------------------------------------------
-;----------------------------------------------------------------------------------------------------
-MOVER_APUNTADOR	PROC NEAR
-		  MOV_APUN MANEJ, CONT_REG
-		  JC FALLO_M			; SI HAY ERROR, SALE
-R4:		  RET
-FALLO_M:  DESP ERROR_M
-		  JMP R4
-MOVER_APUNTADOR	ENDP		  
-
-;----------------------------------------------------------------------------------------------------
-;----------------------------------------------------------------------------------------------------
-LIMPIAR	PROC NEAR
-		XOR CX, CX
-		MOV CL, 15
-		CLD
-		LEA SI, LIMPIA
-		LEA DI, LINEA
-M:		MOVSB
-		LOOP M
-		RET
-LIMPIAR ENDP
-
 ;Procedimiento de la tabla
 PRO1 	PROC NEAR
 INI:	LEA DX, MSJCADENA
@@ -297,8 +312,11 @@ INI:	LEA DX, MSJCADENA
 		CALL MOSTRAR
 		CALL ESCRIBIR_ARCHIVO
 		INC CONT_REG
+		INC CONT_REG1
 		CALL LIMPIAR
 		CERRAR_A MANEJ
+		ABRIR_A NOMBRE
+		MOV_APUN MANEJ, 0, 02H
         RET
 SALIR:	LEA DX, NO_CAD
 		CALL MOSTRAR
@@ -307,11 +325,16 @@ PRO1 	ENDP
 
 ;Procedimiento de la tabla
 PRO2 	PROC NEAR
-		MOV AL, MSJMENU2
-		MOV MSJ, AL
-		;MOV  VAL_SUP, CONT_REG
+		COPIAR_CAD MSJMENU2, MSJ, 52
+		MOVM  CONT_REG1, VAL_SUP 
 		CALL INGRESO
-		MOV  AL, OPCION
+		XOR AX, AX
+		MOV  AL, 17
+		MUL OPCION
+		MOV_APUN MANEJ, AX, 00H
+		LEER_A MANEJ
+		LEA DX, LINEA
+		CALL MOSTRAR
         RET
 PRO2 	ENDP
 
