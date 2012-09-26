@@ -73,6 +73,13 @@ LEER_A	MACRO MANEJADOR
 	POP CX
 	ENDM
 ; **********************************************************************************
+COPIAR_CAD MACRO SOURCE, DESTINY, LONGITUD
+	MOV CX, LONGITUD
+	LEA SI, SOURCE
+	LEA DI, DESTINY
+REP MOVSB
+	ENDM
+
 ; **********************************************************************************
 ABRIR_A	MACRO NOM_ARCHIVO
 	MOV AH, 3DH			; petición
@@ -97,8 +104,8 @@ MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 			DB	 ' 4. Borrar articulo   							 ', 0DH, 0AH
 			DB	 ' 5. Salida   										 ', 0DH, 0AH, '$'
 MSJMENU1	DB   'Ingrese el numero de la opcion que desea realizar: ','$'
-MSJMENU2	DB   'Ingrese el Registro a ver: ','$'
-MSJ		    DB   ?
+MSJMENU2	DB   'Ingrese el Registro a ver:                         ','$'
+MSJ			DB   52 DUP (' ')
 MSJCADENA   DB   'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
 M_ING   	DB   0DH,0AH,'Ingrese el numero de codigo: $'
 M_INGIN 	DB   0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
@@ -340,8 +347,7 @@ MAIN   PROC FAR
 ASD:    LEA    DX, MSJMENU
         CALL   MOSTRAR
         CALL   ENTR
-		MOV   AL, MSJMENU1
-		MOV   MSJ, AL
+		COPIAR_CAD MSJMENU1, MSJ, 52
 		MOV   VAL_SUP, 5
         CALL   INGRESO
 		CALL   ENTR
