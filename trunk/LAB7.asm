@@ -99,7 +99,7 @@ REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al u
           CALL  MOSTRAR
           MOV   AH, 01H
           INT   21H
-          CMP   AL, 30h                     ;Se verifica que el ingreso no esté debajo del valor inferior.
+          CMP   AL, 30H                     ;Se verifica que el ingreso no esté debajo del valor inferior.
           JB    INVALIDO                    ;De estarlo, se repite la petición.
           CMP   AL, 39H                     ;Se verifica que el ingreSo no esté arriba del valor superior.
           JA    INVALIDO                    ;De estarlo, se repite la petición.
@@ -170,8 +170,9 @@ SALTOS	PROC 	NEAR
 SALTOS	ENDP
 ;---------------------------------------------------------------------------------------------------------
 MAIN   PROC FAR
-       .STARTUP
-
+        MOV AX, @DATA           ; inicializar area de datos
+		MOV DS, AX
+		MOV ES, AX
         LEA    DX, MSJMENU
         CALL   MOSTRAR
         CALL   ENTR
