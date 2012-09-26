@@ -73,6 +73,15 @@ LEER_A	MACRO MANEJADOR
 	POP CX
 	ENDM
 ; **********************************************************************************
+; **********************************************************************************
+ABRIR_A	MACRO NOM_ARCHIVO
+	MOV AH, 3DH			; petición
+	MOV AL, 00H			; modo sólo lectura
+	LEA DX, NOM_ARCHIVO	; cadena ASCIIZ
+	INT	21H
+	MOV	MANEJ, AX		; guardar el manejador
+	ENDM
+; **********************************************************************************
 
 .MODEL SMALL
 .STACK 64
@@ -229,7 +238,8 @@ ESCRIBIR_ARCHIVO ENDP
 ;----------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------
 LEER_ARCHIVO  PROC NEAR
-		  LEER_A CONT_REG
+		  ABRIR_A NOMBRE
+		  LEER_A MANEJ
 		  JC ERROR1		; prueba por error
 		  CMP AX, 00		; en AX retorna el numero de bytes leídos
 		  JE ERROR2
@@ -290,7 +300,7 @@ PRO1 	ENDP
 PRO2 	PROC NEAR
 		MOV AL, MSJMENU2
 		MOV MSJ, AL
-		MOV  VAL_SUP, CONT_REG
+		;MOV  VAL_SUP, CONT_REG
 		CALL INGRESO
 		MOV  AL, OPCION
         RET
@@ -301,8 +311,6 @@ PRO3 	PROC NEAR
 		XOR CX, CX
 		MOV CX, CONT_REG
 LEER:	CALL LEER_ARCHIVO
-		LEA BX, LINEA
-		CALL MOSTRAR
 		LOOP LEER
         RET
 PRO3 	ENDP
