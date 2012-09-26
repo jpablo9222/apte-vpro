@@ -43,9 +43,8 @@ DESCRIP	    DB   12 DUP (' '), 0DH, 0AH, '$'             ; caracteres introducid
 LINEA	    DB   14 DUP (' '), 0DH, 0AH, '$'
 ENTR1       DB   0DH,0AH,'$'
 
-SECD    	DB   ?
-PRIMD		DB   ?
-RES     	DW   ?
+SECD    	DB   ' '
+PRIMD		DB   ' '
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
 .CODE
@@ -123,10 +122,10 @@ GET_ING   ENDP
 ;CONCA: Se encarga de concatener los dígitos ingresados para guardarlos como Strings en la cadena correspondiente. 
 
 CONCA   PROC  NEAR
+		CLD
 		LEA   SI, PRIMD
 		LEA   DI, LINEA
 		MOVSB
-		INC   DI
 		LEA   SI, SECD
 	    MOVSB
 		LEA   DX, LINEA
