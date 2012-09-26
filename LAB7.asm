@@ -405,10 +405,16 @@ PRO2 	ENDP
 ;-----------------------------------------------------------------------------------------------------
 PRO3 	PROC NEAR
 		ABRIR_A NOMBRE, 00H
-		MOVM CONT_REG1, OPCION
-		CALL MULTI
+		XOR CX, CX
+		MOV CL, CONT_REG1
+		MOV N, 0
+AG:		CALL MULTI
+		CALL ENTR
+		CALL ENTR
 		CALL LEER_ARCHIVO
-		CERRAR_A MANEJ
+		DESP LECTURA
+		ADD N, 1
+		LOOP AG
         RET
 PRO3 	ENDP
 

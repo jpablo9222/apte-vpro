@@ -12,13 +12,18 @@
 ; computadoras y assembler, Martha Ligia Naranjo.
 ;-------------------------------------------------------------------------------------------
 
-
 .MODEL SMALL
 .STACK 64
 .DATA
 
 OPCION    	DB   ?
-MSJMENU 	DB   'Que desea hacer: 1.Sumar  2.Restar  3.Multiplicar (ingrese el numero de la opcion): ','$'
+MSJMENU 	DB   ' Que desea hacer:   								', 0DH, 0AH
+			DB	 ' 1. Ingreso de articulo   						', 0DH, 0AH 
+			DB	 ' 2. Despliegue de articulo   						', 0DH, 0AH 
+			DB	 ' 3. Despliegue de inventario total de artículos 	', 0DH, 0AH
+			DB	 ' 4. Borrar articulo   							', 0DH, 0AH
+			DB	 ' 5. Salida   										', 0DH, 0AH, '$'
+			
 MSJ1     	DB   'Eligio sumar$'
 MSJ2		DB 	 'Eligio restar$'
 MSJ3 		DB   'Eligio multiplicar$' 
@@ -54,6 +59,39 @@ INGRESO PROC NEAR
 		MOV OPCION, AL
 		RET
 INGRESO ENDP
+
+;----------------------------------------------------------------------------------------------------
+
+;GET_ING: Permite el ingreso de un número desde el teclado, luego de haber impreso una petición, genérica.
+;         Valida que el caracter se encuentre dentro del rango 0<=caracter<=9.
+;         De no estarlos, repite la petición del caracter. Se almacenan dos caracteres.
+;TOMADO DEL PROYECTO FINAL DE ORGANIZACION DE COMPUTADORAS, AUTORES: Juan Pablo Argueta (yo), Oscar Castaneda
+
+GET_ING   PROC  NEAR
+REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al usuario.
+          CALL  MOSTRAR
+          MOV   AH, 01H
+          INT   21H
+          SUB   AL, 30H
+          CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
+          JB    INVALIDO                    ;De estarlo, se repite la petición.
+          CMP   AL, 9                       ;Se verifica que el ingreSo no esté arriba del valor superior.
+          JA    INVALIDO                    ;De estarlo, se repite la petición.
+		  MOV   PRIMD, AL
+          MOV   AH, 01H
+          INT   21H
+          SUB   AL, 30H
+          CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
+          JB    INVALIDO                    ;De estarlo, se repite la petición.
+          CMP   AL, 9                       ;Se verifica que el ingreSo no esté arriba del valor superior.
+          JA    INVALIDO
+          CALL  MULTI
+          RET                               ;Si se llega aquí, el ingreso el válido.
+INVALIDO: LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
+          CALL  MOSTRAR
+          CALL  ENTR1                       ;Se cambia de línea.
+          JMP   REP_ING                     ;Se repite el ingreso.
+GET_ING   ENDP
 
 ;Procedimiento de la tabla
 PRO1 	PROC NEAR
