@@ -73,9 +73,9 @@ MOV_APUN MACRO MANEJADOR, REGISTRO, POS
 ;***********************************************************************************
 ; Macro para abrir archivo. 
 ;***********************************************************************************
-ABRIR_A	MACRO NOM_ARCHIVO
+ABRIR_A	MACRO NOM_ARCHIVO, MODO
 	MOV AH, 3DH			; petición
-	MOV AL, 02H			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
+	MOV AL, MODO			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
 	LEA DX, NOM_ARCHIVO	; cadena ASCIIZ
 	INT	21H
 	MOV	MANEJ, AX		; guardar el manejador
@@ -86,13 +86,11 @@ ABRIR_A	MACRO NOM_ARCHIVO
 ; Macro para leer archivo. 
 ;***********************************************************************************
 LEER_A	MACRO MANEJADOR
-	PUSH CX
 	MOV	AH, 3FH			; petición
 	MOV BX, MANEJADOR	; manejador
-	MOV CX, 15			; longitud del registro
-	LEA	DX, LINEA		; registro donde se leen datos
+	MOV CX, 17			; longitud del registro
+	LEA	DX, LECTURA		; registro donde se leen datos
 	INT 21H
-	POP CX
 	ENDM
 ; **********************************************************************************
 
@@ -133,7 +131,7 @@ MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 			DB	 ' 4. Borrar articulo   							 ', 0DH, 0AH
 			DB	 ' 5. Salida   										 ', 0DH, 0AH, '$'
 MSJMENU1	DB   'Ingrese el numero de la opcion que desea realizar: ','$'
-MSJMENU2	DB   'Ingrese el Registro a ver:                         ','$'
+MSJMENU2	DB   '                        Ingrese el Registro a ver: ','$'
 MSJ			DB   52 DUP (' ')
 MSJCADENA   DB   0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
 M_ING   	DB   0DH,0AH,'Ingrese el numero de codigo: $'
@@ -148,6 +146,7 @@ MAXLEN 	    DB   13                       				 ; numero maximo de caracteres de 
 ACTLEN 	    DB   0                        				 ; numero real de caracteres de entrada
 DESCRIP	    DB   12 DUP (' ')                            ; caracteres introducidos del teclado
 LINEA	    DB   15 DUP (' '), 0DH, 0AH, '$'
+LECTURA		DB   17 DUP (' ')
 LIMPIA		DB	 15 DUP (' ')							 ; cadena para limpiar línea.
 ENTR1       DB   0DH,0AH,'$'
 NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
@@ -157,11 +156,11 @@ CONT_REG	DW	0
 CONT_REG1	DB  0
 VAL_SUP		DB  ?
 REGISTRO	DB  ?
-ERROR		DB	'No pudo crearse el archivo$'
-ERROR_E0    DB  'No pudo abrirse el archvio$'
-ERROR_E1	DB	'No pudo escribirse en el archivo$'
-ERROR_L1	DB	'No pudo leerse del archivo$'
-ERROR_L2	DB	'No se realizo la lectura completa del archivo$'
+ERROR		DB	0DH,0AH,'No pudo crearse el archivo$'
+ERROR_E0    DB  0DH,0AH,'No pudo abrirse el archvio$'
+ERROR_E1	DB	0DH,0AH,'No pudo escribirse en el archivo$'
+ERROR_L1	DB	0DH,0AH,'No pudo leerse del archivo$'
+ERROR_L2	DB	0DH,0AH,'No se realizo la lectura completa del archivo$'
 ERROR_M		DB	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	0
 ;-------------------------------------------------------------------------------------------
@@ -216,6 +215,7 @@ LEER_ARCHIVO  PROC NEAR
 		  JC ERROR1										 ; Prueba por error.
 		  CMP AX, 00									 ; En AX retorna el numero de bytes leidos.
 		  JE ERROR2
+		  DESP LINEA
 R2:		  RET
 ERROR1:   DESP ERROR_L1
 		  JMP R2
@@ -227,7 +227,7 @@ LEER_ARCHIVO ENDP
 ; Procedimiento para mover el apuntador, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 MOVER_APUNTADOR	PROC NEAR
-		  MOV_APUN MANEJ, CONT_REG, 00H
+		  MOV_APUN MANEJ, AX, 00H
 		  JC FALLO_M									 ; Si hay error, despliega el mensaje de error.
 R4:		  RET
 FALLO_M:  DESP ERROR_M
@@ -325,6 +325,8 @@ CONCA   ENDP
 ;Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO1 	PROC NEAR
+		ABRIR_A NOMBRE, 01H
+		MOV_APUN MANEJ, 0, 02H
 INI:	LEA DX, MSJCADENA
 		CALL MOSTRAR
 		MOV AH, 0AH
@@ -339,25 +341,28 @@ INI:	LEA DX, MSJCADENA
 		CALL MOSTRAR
 		CALL ESCRIBIR_ARCHIVO
 		CERRAR_A MANEJ
-		ABRIR_A NOMBRE
-		MOV DX,MANEJ	; GUARDA EN DL MANEJADOR DE ARCHIVO PARA DESPLIEGUE
+		ABRIR_A NOMBRE, 01H
 		JC SALIR
 		MOV_APUN MANEJ, 0, 02H
 		INC CONT_REG
 		INC CONT_REG1
 		CALL LIMPIAR
+		CERRAR_A MANEJ
         RET
 SALIR:	LEA DX, NO_CAD
 		CALL MOSTRAR
 		JMP INI	
 PRO1 	ENDP
 
+;-----------------------------------------------------------------------------------------------------
+;Procedimiento para multiplicar el manejador.
+;-----------------------------------------------------------------------------------------------------
 MULTI	PROC NEAR
 		PUSH AX
 		XOR AX, AX
 		MOV  AL, 17
 		MUL OPCION
-		MOV CONT_REG, AX
+		MOV_APUN MANEJ, AX, 00H
 		POP AX
 		RET
 MULTI	ENDP
@@ -365,16 +370,15 @@ MULTI	ENDP
 ;Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO2 	PROC NEAR
-		CALL MULTI
+		ABRIR_A NOMBRE, 00H
 		COPIAR_CAD MSJMENU2, MSJ, 52
 		MOVM  CONT_REG1, VAL_SUP 
 		CALL INGRESO
-		MOV_APUN MANEJ, CONT_REG, 00H
+		CALL MULTI
 		CALL LEER_ARCHIVO
 		CALL ENTR
-		LEA DX, LINEA
-		CALL MOSTRAR
-		DESP LINEA
+		DESP LECTURA
+		CERRAR_A MANEJ
         RET
 PRO2 	ENDP
 
@@ -382,10 +386,12 @@ PRO2 	ENDP
 ;Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO3 	PROC NEAR
+		ABRIR_A NOMBRE, 00H
 		XOR CX, CX
 		MOV CX, CONT_REG
 LEER:	CALL LEER_ARCHIVO
 		LOOP LEER
+		CERRAR_A MANEJ
         RET
 PRO3 	ENDP
 
