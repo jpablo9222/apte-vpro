@@ -64,18 +64,20 @@ ABRIR_A	MACRO NOM_ARCHIVO
 	ENDM
 ; **********************************************************************************
 LEER_A	MACRO MANEJADOR
+	PUSH CX
 	MOV	AH, 3FH			; petición
 	MOV BX, MANEJADOR	; manejador
-	MOV CX, 17		    ; longitud del registro
+	MOV CX, 17			; longitud del registro
 	LEA	DX, LINEA		; registro donde se leen datos
 	INT 21H
+	POP CX
 	ENDM
 ; **********************************************************************************
 
 .MODEL SMALL
 .STACK 64
 .DATA
-
+.386
 NOMBRE		DB	 'LAB7.TXT',00H
 MANEJ		DW	 ?
 OPCION    	DB   ?
@@ -113,6 +115,7 @@ ERROR_E1	DB	'No pudo escribirse en el archivo$'
 ERROR_L1	DB	'No pudo leerse del archivo$'
 ERROR_L2	DB	'No se realizo la lectura completa del archivo$'
 ERROR_M		DB	0DH,0AH,'No se realizo el movimiento del apuntador.$'
+N			DW	0
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
 .CODE
@@ -226,7 +229,7 @@ ESCRIBIR_ARCHIVO ENDP
 ;----------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------
 LEER_ARCHIVO  PROC NEAR
-		  LEER_A MANEJ
+		  LEER_A CONT_REG
 		  JC ERROR1		; prueba por error
 		  CMP AX, 00		; en AX retorna el numero de bytes leídos
 		  JE ERROR2
@@ -275,6 +278,7 @@ INI:	LEA DX, MSJCADENA
 		LEA DX, LINEA
 		CALL MOSTRAR
 		CALL ESCRIBIR_ARCHIVO
+		INC CONT_REG
 		CALL LIMPIAR
         RET
 SALIR:	LEA DX, NO_CAD
@@ -291,8 +295,12 @@ PRO2 	ENDP
 
 ;Procedimiento de la tabla
 PRO3 	PROC NEAR
-		LEA DX, MSJ3
+		XOR CX, CX
+		MOV CX, CONT_REG
+LEER:	CALL LEER_ARCHIVO
+		LEA BX, LINEA
 		CALL MOSTRAR
+		LOOP LEER
         RET
 PRO3 	ENDP
 
@@ -302,7 +310,6 @@ PRO4	ENDP
 
 PRO5	PROC NEAR
 		JMP SALE
-		RET
 PRO5	ENDP
 
 ;Tomado del ejemplo "Tablas.asm" de Martha Ligia Naranjo
@@ -321,10 +328,8 @@ MAIN   PROC FAR
 ASD:    LEA    DX, MSJMENU
         CALL   MOSTRAR
         CALL   ENTR
-
         CALL   INGRESO
 		CALL   ENTR
-        
         
 		CALL SALTOS
 		JMP ASD
