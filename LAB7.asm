@@ -77,7 +77,7 @@ LEER_A	MACRO MANEJADOR
 .DATA
 
 NOMBRE		DB	 'LAB7.TXT',00H
-MANEJ		DB	 ?
+MANEJ		DW	 ?
 OPCION    	DB   ?
 MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 			DB	 ' 1. Ingreso de articulo   						 ', 0DH, 0AH 
@@ -100,14 +100,14 @@ TABLA   	DW   PRO1              ; Tabla de bifurcación con sus tres opciones
 LISTA  	    LABEL BYTE                    				 ; inicio de la lista de parametros
 MAXLEN 	    DB   13                       				 ; numero maximo de caracteres de entrada
 ACTLEN 	    DB   0                        				 ; numero real de caracteres de entrada
-LIMPIA		DB	 15 DUP (' ')							 ; cadena para limpiar línea.
 DESCRIP	    DB   12 DUP (' ')                            ; caracteres introducidos del teclado
 LINEA	    DB   15 DUP (' '), 0DH, 0AH, '$'
+LIMPIA		DB	 15 DUP (' ')							 ; cadena para limpiar línea.
 ENTR1       DB   0DH,0AH,'$'
 NO_CAD	   	DB  'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
 SECD    	DB   ' '
 PRIMD		DB   ' '
-CONT_REG	DB	0
+CONT_REG	DW	0
 ERROR		DB	'No pudo crearse el archivo$'
 ERROR_E1	DB	'No pudo escribirse en el archivo$'
 ERROR_L1	DB	'No pudo leerse del archivo$'
