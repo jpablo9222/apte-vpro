@@ -352,17 +352,24 @@ SALIR:	LEA DX, NO_CAD
 		JMP INI	
 PRO1 	ENDP
 
+MULTI	PROC NEAR
+		PUSH AX
+		XOR AX, AX
+		MOV  AL, 17
+		MUL OPCION
+		MOV CONT_REG, AX
+		POP AX
+		RET
+MULTI	ENDP
 ;-----------------------------------------------------------------------------------------------------
 ;Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO2 	PROC NEAR
+		CALL MULTI
 		COPIAR_CAD MSJMENU2, MSJ, 52
 		MOVM  CONT_REG1, VAL_SUP 
 		CALL INGRESO
-		XOR AX, AX
-		MOV  AL, 17
-		MUL OPCION
-		MOV_APUN MANEJ, 0, 00H
+		MOV_APUN MANEJ, CONT_REG, 00H
 		CALL LEER_ARCHIVO
 		CALL ENTR
 		LEA DX, LINEA
