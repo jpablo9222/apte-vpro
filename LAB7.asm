@@ -24,7 +24,10 @@ MSJMENU 	DB   ' Que desea hacer:   								', 0DH, 0AH
 			DB	 ' 3. Despliegue de inventario total de artículos 	', 0DH, 0AH
 			DB	 ' 4. Borrar articulo   							', 0DH, 0AH
 			DB	 ' 5. Salida   										', 0DH, 0AH, '$'
-			
+MSJMENU1	DB  'Ingrese el numero de la opcion que desea realizar: ','$'
+M_ING   	DB  0DH,0AH,'Ingrese el numero de codigo: $'
+M_INGIN 	DB  0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			
+PRIMD		DB  ? 
 MSJ1     	DB   'Eligio sumar$'
 MSJ2		DB 	 'Eligio restar$'
 MSJ3 		DB   'Eligio multiplicar$' 
@@ -33,6 +36,8 @@ TABLA   	DW   PRO1              ; Tabla de bifurcación con sus tres opciones
 			DW   PRO3
 
 ENTR1        DB   0DH,0AH,'$'
+SECD    DB  ?
+RES     DW  ?
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
 .CODE
@@ -54,12 +59,26 @@ ENTR	PROC NEAR
 ENTR    ENDP
 
 ; Controla el ingreso de las opciones
-INGRESO PROC NEAR
-		MOV AH,01H
-		INT 21H
-		MOV OPCION, AL
-		RET
-INGRESO ENDP
+INGRESO   PROC  NEAR
+REP_ING2: CALL  ENTR
+          LEA   DX, MSJMENU1                 ;Imprime la petición de ingreso al usuario.
+          CALL  MOSTRAR
+          MOV   AH, 01H
+          INT   21H
+          SUB   AL, 30H
+          CMP   AL, 0                       ;Se verifica que el ingreso no esté debajo del valor inferior.
+          JB    INVALIDO2                   ;De estarlo, se repite la petición.
+          CMP   AL, 5                       ;Se verifica que el ingreSo no esté arriba del valor superior.
+          JA    INVALIDO2
+          MOV   OPCION, AL
+		  SUB	OPCION, 1
+          RET                               ;Si se llega aquí, el ingreso es válido.
+INVALIDO2:CALL  ENTR
+          LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
+          CALL  MOSTRAR
+          CALL  ENTR                        ;Se cambia de línea.
+          JMP   REP_ING2
+INGRESO   ENDP
 
 ;----------------------------------------------------------------------------------------------------
 
@@ -90,9 +109,23 @@ REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al u
           RET                               ;Si se llega aquí, el ingreso el válido.
 INVALIDO: LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
           CALL  MOSTRAR
-          CALL  ENTR1                       ;Se cambia de línea.
+          CALL  ENTR                       ;Se cambia de línea.
           JMP   REP_ING                     ;Se repite el ingreso.
 GET_ING   ENDP
+
+;MULTI: Se encarga de realizar las multiplicaciones necesarias para guardar el numero de dos 
+;       digitos en el arreglo "Notas".
+
+MULTI   PROC  NEAR
+        MOV   SECD, AL
+        MOV   AL, 10
+		MUL   PRIMD
+		MOV   RES, AX
+		XOR   AX, AX
+		MOV   AL, SECD
+		ADD   RES, AX
+		RET
+MULTI    ENDP
 
 ;Procedimiento de la tabla
 PRO1 	PROC NEAR
@@ -123,7 +156,6 @@ SALTOS	PROC 	NEAR
 		JMP	[TABLA+BX] 	; salta a la tabla
 SALTOS	ENDP
 ;---------------------------------------------------------------------------------------------------------
-
 MAIN   PROC FAR
        .STARTUP
 
@@ -133,7 +165,7 @@ MAIN   PROC FAR
 
         CALL   INGRESO
 		CALL   ENTR
-        SUB    OPCION, 31H
+        
         
 		CALL SALTOS
 		
