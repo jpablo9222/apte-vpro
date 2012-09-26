@@ -318,7 +318,7 @@ MAIN   PROC FAR
 		MOV DS, AX
 		MOV ES, AX
 		CALL CREAR_ARCHIVO
-        LEA    DX, MSJMENU
+ASD:    LEA    DX, MSJMENU
         CALL   MOSTRAR
         CALL   ENTR
 
@@ -327,7 +327,7 @@ MAIN   PROC FAR
         
         
 		CALL SALTOS
-		
+		JMP ASD
 SALE:   CERRAR_A MANEJ
 		MOV AH, 4CH		;salida al DOS
 		INT 21H
