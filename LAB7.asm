@@ -12,14 +12,20 @@ TITLE LAB7
 ; Revisiones: 1
 ; 25 de septiembre del 2012
 ;-------------------------------------------------------------------------------------------
-; **********************************************************************************
+
+;***********************************************************************************
+; Macro para desplegar una cadena.
+;***********************************************************************************
 DESP	MACRO CADENA
 	MOV AH, 09H		; DESPLEGAR MENSAJE
 	LEA DX, CADENA
 	INT 21H
 	ENDM
 ; **********************************************************************************
-; **********************************************************************************
+
+;***********************************************************************************
+; Macro para crear un archivo.
+;***********************************************************************************
 CREAR_A	MACRO NOM_ARCHIVO
 	MOV	AH, 3CH			; PETICION
 	MOV	CX, 00			; ATRIBUTO NORMAL
@@ -28,6 +34,9 @@ CREAR_A	MACRO NOM_ARCHIVO
 	MOV	MANEJ, AX		; GUARDA EL MANEJADOR
 	ENDM
 ; **********************************************************************************
+
+;***********************************************************************************
+; Macro para escribir un archivo. 
 ; **********************************************************************************
 ESCRIBIR_A	MACRO MANEJADOR, DATOS
 	MOV AH, 40H			; petición para escribir
@@ -37,14 +46,20 @@ ESCRIBIR_A	MACRO MANEJADOR, DATOS
 	INT	21H				; llama al DOS
 	ENDM
 ; **********************************************************************************
-; **********************************************************************************
+
+;***********************************************************************************
+; Macro para cerrar un archivo.
+;***********************************************************************************
 CERRAR_A	MACRO MANEJADOR
 	MOV	AH, 3EH	; PETICION
 	MOV BX, MANEJADOR
 	INT	21H
 	ENDM
 ; **********************************************************************************
-; **********************************************************************************
+
+;***********************************************************************************
+; Macro para mover el apuntador.
+;***********************************************************************************
 MOV_APUN MACRO MANEJADOR, REGISTRO, POS
 	MOV AH, 42H			; Peticion para mover el apuntador
 	MOV	AL, POS 		; 00: inicio, 01: pos actual 02: fin archivo
@@ -54,7 +69,10 @@ MOV_APUN MACRO MANEJADOR, REGISTRO, POS
 	INT 21H
 	ENDM
 ; **********************************************************************************
-; **********************************************************************************
+
+;***********************************************************************************
+; Macro para abrir archivo. 
+;***********************************************************************************
 ABRIR_A	MACRO NOM_ARCHIVO
 	MOV AH, 3DH			; petición
 	MOV AL, 00H			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
@@ -63,6 +81,10 @@ ABRIR_A	MACRO NOM_ARCHIVO
 	MOV	MANEJ, AX		; guardar el manejador
 	ENDM
 ; **********************************************************************************
+
+;***********************************************************************************
+; Macro para leer archivo. 
+;***********************************************************************************
 LEER_A	MACRO MANEJADOR
 	PUSH CX
 	MOV	AH, 3FH			; petición
@@ -73,6 +95,10 @@ LEER_A	MACRO MANEJADOR
 	POP CX
 	ENDM
 ; **********************************************************************************
+
+;***********************************************************************************
+; Macro para copiar una cadena a otra. 
+;***********************************************************************************
 COPIAR_CAD MACRO SOURCE, DESTINY, LONGITUD
 	MOV CX, LONGITUD
 	LEA SI, SOURCE
@@ -81,19 +107,15 @@ REP MOVSB
 	ENDM
 
 ; **********************************************************************************
+
+;***********************************************************************************
+; Macro para "mover de memoria a memoria".
+;***********************************************************************************
 MOVM MACRO SRC, DTN
 	PUSH AX
 	MOV AL, SRC
 	MOV DTN, AL
 	POP AX
-	ENDM
-; **********************************************************************************
-ABRIR_A	MACRO NOM_ARCHIVO
-	MOV AH, 3DH			; petición
-	MOV AL, 00H			; modo sólo lectura
-	LEA DX, NOM_ARCHIVO	; cadena ASCIIZ
-	INT	21H
-	MOV	MANEJ, AX		; guardar el manejador
 	ENDM
 ; **********************************************************************************
 
@@ -116,7 +138,7 @@ MSJ			DB   52 DUP (' ')
 MSJCADENA   DB   0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
 M_ING   	DB   0DH,0AH,'Ingrese el numero de codigo: $'
 M_INGIN 	DB   0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
-TABLA   	DW   PRO1              ; Tabla de bifurcación con sus tres opciones
+TABLA   	DW   PRO1               					; Tabla de bifurcación con sus tres opciones
 			DW   PRO2
 			DW   PRO3
 			DW	 PRO4
@@ -147,14 +169,17 @@ N			DW	0
 .CODE
 ;-------------------------------------------------------------------------------------------
 ; PROCEDIMIENTOS
+;-------------------------------------------------------------------------------------------
 ; Despliega en pantalla el mensaje indicado
+;-------------------------------------------------------------------------------------------
 MOSTRAR	PROC NEAR
 		MOV   AH, 09H               ; Petición para mostrar una cadena
         INT   21H
         RET
 MOSTRAR ENDP
-
+;-------------------------------------------------------------------------------------------
 ; Deja un espacio para ordenar mejor la interfaz
+;-------------------------------------------------------------------------------------------
 ENTR	PROC NEAR
 		MOV   AH, 09H
 		LEA   DX, ENTR1              ; Baja una línea
@@ -162,37 +187,35 @@ ENTR	PROC NEAR
 		RET
 ENTR    ENDP
 ;----------------------------------------------------------------------------------------------------
+; Procedimiento que carga el macro para crear un archivo, junto con sus posibles errores.
+;----------------------------------------------------------------------------------------------------
 CREAR_ARCHIVO PROC NEAR
 		  CREAR_A NOMBRE
-		  JC FALLO		; SI HAY ERROR, SALE
+		  JC FALLO										 ; Si hay error despliega mensaje.
 R1:		  RET
 FALLO:	  DESP ERROR
 		  JMP R1
 CREAR_ARCHIVO ENDP
+
 ;----------------------------------------------------------------------------------------------------
-ABRIR_ARCHIVO PROC NEAR
-		  ABRIR_A NOMBRE
-		  JC FALLO1		; SI HAY ERROR, SALE
-R5:		  RET
-FALLO1:	  DESP ERROR
-		  JMP R5
-ABRIR_ARCHIVO ENDP
-;----------------------------------------------------------------------------------------------------
+; Procedimiento para escribir en el archivo, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 ESCRIBIR_ARCHIVO PROC NEAR
 		  ESCRIBIR_A MANEJ, LINEA
-		  JC ERROR3		; prueba por error
+		  JC ERROR3										 ; Prueba por error.
 R3:		  RET
 ERROR3:	  DESP ERROR_E1
 		  JMP R3		  
 ESCRIBIR_ARCHIVO ENDP
+
 ;----------------------------------------------------------------------------------------------------
+; Procedimiento para leer un archivo, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 LEER_ARCHIVO  PROC NEAR
-		  ABRIR_A NOMBRE
-		  LEER_A MANEJ
-		  JC ERROR1		; prueba por error
-		  CMP AX, 00		; en AX retorna el numero de bytes leídos
+		  ABRIR_A NOMBRE								 ; Abre el archivo.
+		  LEER_A MANEJ									 ; Mueve el manejador.
+		  JC ERROR1										 ; Prueba por error.
+		  CMP AX, 00									 ; En AX retorna el numero de bytes leidos.
 		  JE ERROR2
 R2:		  RET
 ERROR1:   DESP ERROR_L1
@@ -202,19 +225,21 @@ ERROR2:   DESP ERROR_L2
 LEER_ARCHIVO ENDP
 
 ;----------------------------------------------------------------------------------------------------
+; Procedimiento para mover el apuntador, junto con sus posibles errores.
 ;----------------------------------------------------------------------------------------------------
 MOVER_APUNTADOR	PROC NEAR
-		  MOV_APUN MANEJ, CONT_REG, 00H
-		  JC FALLO_M			; SI HAY ERROR, SALE
+		  MOV_APUN MANEJ, CONT_REG
+		  JC FALLO_M									 ; Si hay error, despliega el mensaje de error.
 R4:		  RET
 FALLO_M:  DESP ERROR_M
 		  JMP R4
 MOVER_APUNTADOR	ENDP		  
 
 ;----------------------------------------------------------------------------------------------------
+; Procedimiento para limpiar una cadena.
 ;----------------------------------------------------------------------------------------------------
 LIMPIAR	PROC NEAR
-		XOR CX, CX
+		XOR CX, CX										 ; 
 		MOV CL, 15
 		CLD
 		LEA SI, LIMPIA
@@ -223,8 +248,10 @@ M:		MOVSB
 		LOOP M
 		RET
 LIMPIAR ENDP
+
 ;-----------------------------------------------------------------------------------------------------
 ; Controla el ingreso de las opciones
+;-----------------------------------------------------------------------------------------------------
 INGRESO   PROC  NEAR
 REP_ING2: CALL  ENTR
           LEA   DX, MSJ                     ;Imprime la petición de ingreso al usuario.
@@ -247,12 +274,11 @@ INVALIDO2:CALL  ENTR
 INGRESO   ENDP
 
 ;----------------------------------------------------------------------------------------------------
-
 ;GET_ING: Permite el ingreso de un número desde el teclado, luego de haber impreso una petición, genérica.
 ;         Valida que el caracter se encuentre dentro del rango 0<=caracter<=9.
 ;         De no estarlos, repite la petición del caracter. Se almacenan dos caracteres.
 ;TOMADO DEL PROYECTO FINAL DE ORGANIZACION DE COMPUTADORAS, AUTORES: Juan Pablo Argueta (yo), Oscar Castaneda
-
+;-----------------------------------------------------------------------------------------------------
 GET_ING   PROC  NEAR
 REP_ING:  LEA   DX, M_ING                   ;Imprime la petición de ingreso al usuario.
           CALL  MOSTRAR
@@ -278,8 +304,9 @@ INVALIDO: LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se impr
           JMP   REP_ING                     ;Se repite el ingreso.
 GET_ING   ENDP
 
+;-----------------------------------------------------------------------------------------------------
 ;CONCA: Se encarga de concatener los dígitos ingresados para guardarlos como Strings en la cadena correspondiente. 
-
+;-----------------------------------------------------------------------------------------------------
 CONCA   PROC  NEAR
 		CLD
 		LEA    SI, PRIMD
@@ -297,6 +324,7 @@ CONCA   ENDP
 
 ;----------------------------------------------------------------------------------------------------
 ;Procedimiento de la tabla
+;-----------------------------------------------------------------------------------------------------
 PRO1 	PROC NEAR
 INI:	LEA DX, MSJCADENA
 		CALL MOSTRAR
@@ -323,7 +351,9 @@ SALIR:	LEA DX, NO_CAD
 		JMP INI	
 PRO1 	ENDP
 
+;-----------------------------------------------------------------------------------------------------
 ;Procedimiento de la tabla
+;-----------------------------------------------------------------------------------------------------
 PRO2 	PROC NEAR
 		COPIAR_CAD MSJMENU2, MSJ, 52
 		MOVM  CONT_REG1, VAL_SUP 
@@ -338,7 +368,9 @@ PRO2 	PROC NEAR
         RET
 PRO2 	ENDP
 
+;-----------------------------------------------------------------------------------------------------
 ;Procedimiento de la tabla
+;-----------------------------------------------------------------------------------------------------
 PRO3 	PROC NEAR
 		XOR CX, CX
 		MOV CX, CONT_REG
@@ -347,22 +379,33 @@ LEER:	CALL LEER_ARCHIVO
         RET
 PRO3 	ENDP
 
+;-----------------------------------------------------------------------------------------------------
+; Procedimiento de la tabla
+;-----------------------------------------------------------------------------------------------------
 PRO4	PROC NEAR
 		RET
 PRO4	ENDP
 
+;-----------------------------------------------------------------------------------------------------
+; Procedimiento de la tabla.
+;-----------------------------------------------------------------------------------------------------
 PRO5	PROC NEAR
 		JMP SALE
 PRO5	ENDP
 
+;-----------------------------------------------------------------------------------------------------
 ;Tomado del ejemplo "Tablas.asm" de Martha Ligia Naranjo
+;-----------------------------------------------------------------------------------------------------
 SALTOS	PROC 	NEAR
 		XOR	BX, BX	  	; pone a 0 registro BX
 		MOV BL, OPCION 	; obtener el codigo
 		SHL	BX, 01	  	; mult. Por 2
 		JMP	[TABLA+BX] 	; salta a la tabla
 SALTOS	ENDP
+
 ;---------------------------------------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------------------------------
 MAIN   PROC FAR
         MOV AX, @DATA           ; inicializar area de datos
 		MOV DS, AX
