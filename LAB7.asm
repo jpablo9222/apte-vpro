@@ -38,7 +38,7 @@ OPCION    	DB   ?
 MSJMENU 	DB   ' Que desea hacer:   								 ', 0DH, 0AH
 			DB	 ' 1. Ingreso de articulo   						 ', 0DH, 0AH 
 			DB	 ' 2. Despliegue de articulo   						 ', 0DH, 0AH 
-			DB	 ' 3. Despliegue de inventario total de artículos 	 ', 0DH, 0AH
+			DB	 ' 3. Despliegue de inventario total de articulos 	 ', 0DH, 0AH
 			DB	 ' 4. Borrar articulo   							 ', 0DH, 0AH
 			DB	 ' 5. Salida   										 ', 0DH, 0AH, '$'
 MSJMENU1	DB   'Ingrese el numero de la opcion que desea realizar: ','$'
@@ -56,7 +56,7 @@ TABLA   	DW   PRO1              ; Tabla de bifurcación con sus tres opciones
 LISTA  	    LABEL BYTE                    				 ; inicio de la lista de parametros
 MAXLEN 	    DB   13                       				 ; numero maximo de caracteres de entrada
 ACTLEN 	    DB   0                        				 ; numero real de caracteres de entrada
-DESCRIP	    DB   12 DUP (' '), 0DH, 0AH, '$'             ; caracteres introducidos del teclado
+DESCRIP	    DB   12 DUP (' ')                            ; caracteres introducidos del teclado
 LINEA	    DB   15 DUP (' '), 0DH, 0AH, '$'
 ENTR1       DB   0DH,0AH,'$'
 
@@ -150,7 +150,7 @@ CONCA   PROC  NEAR
 		XOR    CX, CX
 		;CMP    ACTLEN, 0
 		;JE     SALIR
-		MOV    CL, 12
+		MOV    CL, ACTLEN
 		LEA    SI, DESCRIP 
 A:		MOVSB
 		LOOP   A
@@ -162,7 +162,7 @@ PRO1 	PROC NEAR
 		LEA DX, MSJCADENA
 		CALL MOSTRAR
 		MOV AH, 0AH
-		LEA DX, DESCRIP
+		LEA DX, LISTA
 		INT 21H
 		CALL GET_ING
 		CALL ENTR
