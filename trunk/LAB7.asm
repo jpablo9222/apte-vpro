@@ -149,6 +149,7 @@ MSJMENU 	DB		'                    Menu                        ', 0DH, 0AH, 0DH, 
 			DB	  	' 5. Salida   									 ', 0DH, 0AH, '$'
 MSJMENU1	DB    	'Ingrese el numero de la opcion que desea realizar: ','$'
 M_ING2		DB    	0DH,0AH,'Ingrese el Registro a ver: ','$'
+M_ING3		DB    	0DH,0AH,'Ingrese el Registro a eliminar: $'
 MSJ			DB    	31 DUP (' '),'$'
 MSJCADENA   DB    	0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres: ','$'
 M_ING   	DB    	0DH,0AH,'Ingrese el numero de codigo: $'
@@ -179,11 +180,11 @@ ERROR		DB	  	0DH,0AH,'No pudo crearse el archivo$'
 ERROR_E0    DB    	0DH,0AH,'No pudo abrirse el archvio$'
 ERROR_E1	DB	  	0DH,0AH,'No pudo escribirse en el archivo$'
 ERROR_L1	DB	  	0DH,0AH,'No pudo leerse del archivo$'
-ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado$'
+ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado',0DH,0AH,'$'
 ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	  	0
 REG			DW    	?
-SIG_CADENA	DW		0
+ANT_CADENA	DW		0
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -437,20 +438,32 @@ AG:			MOV   RES, CX
 PRO3 		ENDP
 
 ;-----------------------------------------------------------------------------------------------------
+; Procedimiento para obtener el siguiente registro al solicitado.
+;-----------------------------------------------------------------------------------------------------
+LINEA_SIG	PROC NEAR
+			ADD N, 17
+			CALL CONCAD
+			CALL MULTI
+			RET
+LINEA_SIG	ENDP
+
+;-----------------------------------------------------------------------------------------------------
 ; Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO4		PROC  NEAR
-			ABRIR_A NOMBRE, 00H
+			ABRIR_A NOMBRE, 02H
 			DESP LINE
-			COPIAR_CAD M_ING3, MSJ, 34
+			DESP M_ING3
 			CALL GET_ING
-			CALL CONCAD
-			CALL MULTI
-			MOV SIG_CADENA, N
+HACERO:		CALL LINEA_SIG
 			MOV LONGITUD, 17
-			ADD SIG_CADENA, 17
 			CALL LEER_AR
-
+			SUB N, 34
+			CALL LINEA_SIG
+			CALL ESCRIBIR_AR
+			MOV AX, CONT_REG
+			CMP N, AX
+			JB HACERO 
 			RET
 PRO4		ENDP
 
