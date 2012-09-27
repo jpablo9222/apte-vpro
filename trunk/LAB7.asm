@@ -185,7 +185,7 @@ ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado',0DH,0AH,'$'
 ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	  	0
 REG			DW    	?
-DIVISOR		DB		17
+DIVISOR		DW		17
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -452,18 +452,20 @@ LINEA_SIG	ENDP
 ; Procedimiento para dividir N y regresarlo a lo normal.
 ;-----------------------------------------------------------------------------------------------------
 DIVIDIR		PROC NEAR
+			CMP N, 0
+			JE OUTF
 			MOV AX, N
 			DIV DIVISOR
 			MOV N, AX
-			RET
+OUTF:		RET
 DIVIDIR		ENDP
 
 ;-----------------------------------------------------------------------------------------------------
 ; Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO4		PROC  NEAR
-			MOVM CONT_REG, CONT_REG3
-			DEC CONT_REG3
+			MOVM CONT_REG, CONT_REG2
+			DEC CONT_REG2
 			DESP LINE
 			COPIAR_CAD M_ING3, MSJ, 35
 			CALL GET_ING
@@ -480,7 +482,8 @@ HACERO:		ABRIR_A NOMBRE, 00H
 			DESP LINEA
 			CALL ESCRIBIR_AR
 			CERRAR_A MANEJ
-			MOV AX, CONT_REG3
+			MOV AX, CONT_REG2
+			CALL DIVIDIR
 			INC N
 			CMP N, AX
 			JB HACERO
