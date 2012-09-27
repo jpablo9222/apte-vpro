@@ -442,7 +442,7 @@ PRO3 		ENDP
 ;-----------------------------------------------------------------------------------------------------
 LINEA_SIG	PROC NEAR
 			CALL CONCAD
-			ADD N, 17
+			ADD N, 1
 			CALL MULTI
 			RET
 LINEA_SIG	ENDP
@@ -460,7 +460,7 @@ HACERO:		ABRIR_A NOMBRE, 00H
 			CALL LEER_AR
 			CERRAR_A MANEJ
 			ABRIR_A NOMBRE, 01H
-			SUB N, 34
+			SUB N, 2
 			CALL LINEA_SIG
 			CALL ESCRIBIR_AR
 			CERRAR_A MANEJ
@@ -468,6 +468,12 @@ HACERO:		ABRIR_A NOMBRE, 00H
 			CALL LINEA_SIG
 			CMP N, AX
 			JB HACERO
+			ABRIR_A NOMBRE, 01H
+			SUB N, 2
+			CALL LINEA_SIG
+			LIMPIAR LINEA, 15
+			CALL ESCRIBIR_AR
+			CERRAR_A MANEJ
 			RET
 PRO4		ENDP
 
