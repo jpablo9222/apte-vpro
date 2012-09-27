@@ -185,7 +185,7 @@ ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado',0DH,0AH,'$'
 ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	  	0
 REG			DW    	?
-DIVISOR		DW		17
+DIVISOR		DB		17
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -488,9 +488,10 @@ HACERO:		ABRIR_A NOMBRE, 00H
 			CMP N, AX
 			JB HACERO
 			ABRIR_A NOMBRE, 01H
+			MOVM N, CONT_REG2
 			SUB N, 1
 			CALL LINEA_SIG
-			LIMPIAR LINEA, 15
+			LIMPIAR LINEA, 17
 			CALL ESCRIBIR_AR
 			CERRAR_A MANEJ
 			RET
