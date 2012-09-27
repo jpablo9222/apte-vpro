@@ -152,7 +152,8 @@ M_ING2		DB    	0DH,0AH,'Ingrese el Registro a ver: ','$'
 MSJ			DB    	31 DUP (' '),'$'
 MSJCADENA   DB    	0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres: ','$'
 M_ING   	DB    	0DH,0AH,'Ingrese el numero de codigo: $'
-M_INGIN 	DB    	0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
+M_INGIN 	DB    	0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'	
+M_INVEN		DB		'El inventario de articulos es:', 0DH, 0AH, '$'		 
 TABLA   	DW    	PRO1               					; Tabla de bifurcación con sus tres opciones
 			DW    	PRO2
 			DW    	PRO3
@@ -178,7 +179,7 @@ ERROR		DB	  	0DH,0AH,'No pudo crearse el archivo$'
 ERROR_E0    DB    	0DH,0AH,'No pudo abrirse el archvio$'
 ERROR_E1	DB	  	0DH,0AH,'No pudo escribirse en el archivo$'
 ERROR_L1	DB	  	0DH,0AH,'No pudo leerse del archivo$'
-ERROR_L2	DB	  	0DH,0AH,'No se realizo la lectura completa del archivo$'
+ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado$'
 ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	  	0
 REG			DW    	?
@@ -353,6 +354,7 @@ INI:		DESP LINE
 			INC   CONT_REG
 			INC   CONT_REG1
 			LIMPIAR LINEA, 15
+			CALL ENTR
 			RET
 SALIR:		DESP NO_CAD
 			JMP   INI	
@@ -418,7 +420,7 @@ PRO3 		PROC  NEAR
 			MOV   CL, CONT_REG1
 			MOV   REG, 0
 			CALL  ENTR
-			CALL  ENTR
+			DESP M_INVEN
 AG:			MOV   RES, CX
 			MOVMW REG, N
 			CALL  MULTI
@@ -465,7 +467,8 @@ MAIN   		PROC  FAR
 			MOV   DS, AX
 			MOV   ES, AX
 			CALL  CREAR_AR
-ASD: 		DESP MSJMENU
+ASD: 		DESP LINE
+			DESP MSJMENU
 			CALL  ENTR
 			CALL  INGRESO
 			CALL  ENTR
