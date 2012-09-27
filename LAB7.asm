@@ -174,6 +174,7 @@ PRIMD		DB    	' '
 RES			DW	  	?
 CONT_REG	DW	  	0
 CONT_REG1	DB    	0
+CONT_REG2	DW		0
 VAL_SUP		DB    	?
 LONGITUD	DW    	?
 ERROR		DB	  	0DH,0AH,'No pudo crearse el archivo$'
@@ -184,7 +185,7 @@ ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado',0DH,0AH,'$'
 ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	  	0
 REG			DW    	?
-ANT_CADENA	DW		0
+DIVISOR		DB		17
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -441,35 +442,50 @@ PRO3 		ENDP
 ; Procedimiento para obtener el siguiente registro al solicitado.
 ;-----------------------------------------------------------------------------------------------------
 LINEA_SIG	PROC NEAR
-			CALL CONCAD
 			ADD N, 1
 			CALL MULTI
+			CALL ENTR
 			RET
 LINEA_SIG	ENDP
+
+;-----------------------------------------------------------------------------------------------------
+; Procedimiento para dividir N y regresarlo a lo normal.
+;-----------------------------------------------------------------------------------------------------
+DIVIDIR		PROC NEAR
+			MOV AX, N
+			DIV DIVISOR
+			MOV N, AX
+			RET
+DIVIDIR		ENDP
 
 ;-----------------------------------------------------------------------------------------------------
 ; Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO4		PROC  NEAR
+			MOVM CONT_REG, CONT_REG3
+			DEC CONT_REG3
 			DESP LINE
 			COPIAR_CAD M_ING3, MSJ, 35
 			CALL GET_ING
+			CALL CONCAD
 HACERO:		ABRIR_A NOMBRE, 00H
 			CALL LINEA_SIG
 			MOV LONGITUD, 17
 			CALL LEER_AR
 			CERRAR_A MANEJ
 			ABRIR_A NOMBRE, 01H
+			CALL DIVIDIR
 			SUB N, 2
 			CALL LINEA_SIG
+			DESP LINEA
 			CALL ESCRIBIR_AR
 			CERRAR_A MANEJ
-			MOV AX, CONT_REG
-			CALL LINEA_SIG
+			MOV AX, CONT_REG3
+			INC N
 			CMP N, AX
 			JB HACERO
 			ABRIR_A NOMBRE, 01H
-			SUB N, 2
+			SUB N, 1
 			CALL LINEA_SIG
 			LIMPIAR LINEA, 15
 			CALL ESCRIBIR_AR
