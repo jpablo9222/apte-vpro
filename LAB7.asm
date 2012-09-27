@@ -136,50 +136,52 @@ LIMPIAR		MACRO CADENA, LONGITUD
 ; Inicio de Datos
 .DATA
 .386
-NOMBRE		DB	  'LAB7.TXT',00H
-MANEJ		DW	  ?
-OPCION    	DB    ?
-MSJMENU 	DB    ' Que desea hacer:   								 ', 0DH, 0AH
-			DB	  ' 1. Ingreso de articulo   						 ', 0DH, 0AH 
-			DB	  ' 2. Despliegue de articulo   						 ', 0DH, 0AH 
-			DB	  ' 3. Despliegue de inventario total de articulos 	 ', 0DH, 0AH
-			DB	  ' 4. Borrar articulo   							 ', 0DH, 0AH
-			DB	  ' 5. Salida   										 ', 0DH, 0AH, '$'
-MSJMENU1	DB    'Ingrese el numero de la opcion que desea realizar: ','$'
-M_ING2		DB    0DH,0AH,'Ingrese el Registro a ver: ','$'
-MSJ			DB    31 DUP (' '),'$'
-MSJCADENA   DB    0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres:', 0DH, 0AH, '$'
-M_ING   	DB    0DH,0AH,'Ingrese el numero de codigo: $'
-M_INGIN 	DB    0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
-TABLA   	DW    PRO1               					; Tabla de bifurcación con sus tres opciones
-			DW    PRO2
-			DW    PRO3
-			DW	  PRO4
-			DW	  PRO5
-LISTA  	    LABEL BYTE                    				 ; inicio de la lista de parametros
-MAXLEN 	    DB    13                       				 ; numero maximo de caracteres de entrada
-ACTLEN 	    DB    0                        				 ; numero real de caracteres de entrada
-DESCRIP	    DB    12 DUP (' ')                            ; caracteres introducidos del teclado
-LINEA	    DB    15 DUP (' '), 0DH, 0AH, '$'
-LIMPIA		DB	  15 DUP (' ')							 ; cadena para limpiar línea.
-LECTURA		DB    17 DUP (' ')
-ENTR1       DB    0DH,0AH,'$'
-NO_CAD	   	DB    'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
-SECD    	DB    ' '
-PRIMD		DB    ' '
-RES			DW	  ?
-CONT_REG	DW	  0
-CONT_REG1	DB    0
-VAL_SUP		DB    ?
-LONGITUD	DW    ?
-ERROR		DB	  0DH,0AH,'No pudo crearse el archivo$'
-ERROR_E0    DB    0DH,0AH,'No pudo abrirse el archvio$'
-ERROR_E1	DB	  0DH,0AH,'No pudo escribirse en el archivo$'
-ERROR_L1	DB	  0DH,0AH,'No pudo leerse del archivo$'
-ERROR_L2	DB	  0DH,0AH,'No se realizo la lectura completa del archivo$'
-ERROR_M		DB	  0DH,0AH,'No se realizo el movimiento del apuntador.$'
-N			DW	  0
-REG			DW    ?
+NOMBRE		DB	  	'LAB7.TXT',00H
+MANEJ		DW	  	?
+OPCION    	DB    	?
+LINE	   	DB  	80 DUP(0CDH), 0DH, 0AH, '$'	
+MSJMENU 	DB		'                    Menu                        ', 0DH, 0AH, 0DH, 0AH
+			DB    	' Que desea hacer:   							 ', 0DH, 0AH
+			DB	  	' 1. Ingreso de articulo   						 ', 0DH, 0AH 
+			DB	  	' 2. Despliegue de articulo   					 ', 0DH, 0AH 
+			DB	  	' 3. Despliegue de inventario total de articulos ', 0DH, 0AH
+			DB	  	' 4. Borrar articulo   							 ', 0DH, 0AH
+			DB	  	' 5. Salida   									 ', 0DH, 0AH, '$'
+MSJMENU1	DB    	'Ingrese el numero de la opcion que desea realizar: ','$'
+M_ING2		DB    	0DH,0AH,'Ingrese el Registro a ver: ','$'
+MSJ			DB    	31 DUP (' '),'$'
+MSJCADENA   DB    	0DH,0AH,'Ingrese una cadena de no mas de 12 caracteres: ','$'
+M_ING   	DB    	0DH,0AH,'Ingrese el numero de codigo: $'
+M_INGIN 	DB    	0DH,0AH,'Ha realizado un ingreso invalido. Repita su ingreso.$'			 
+TABLA   	DW    	PRO1               					; Tabla de bifurcación con sus tres opciones
+			DW    	PRO2
+			DW    	PRO3
+			DW	  	PRO4
+			DW	  	PRO5
+LISTA  	    LABEL 	BYTE                    				 ; inicio de la lista de parametros
+MAXLEN 	    DB    	13                       				 ; numero maximo de caracteres de entrada
+ACTLEN 	    DB    	0                        				 ; numero real de caracteres de entrada
+DESCRIP	    DB    	12 DUP (' ')                            ; caracteres introducidos del teclado
+LINEA	    DB    	15 DUP (' '), 0DH, 0AH, '$'
+LIMPIA		DB	  	15 DUP (' ')							 ; cadena para limpiar línea.
+LECTURA		DB    	17 DUP (' ')
+ENTR1       DB    	0DH,0AH,'$'
+NO_CAD	   	DB    	'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
+SECD    	DB    	' '
+PRIMD		DB    	' '
+RES			DW	  	?
+CONT_REG	DW	  	0
+CONT_REG1	DB    	0
+VAL_SUP		DB    	?
+LONGITUD	DW    	?
+ERROR		DB	  	0DH,0AH,'No pudo crearse el archivo$'
+ERROR_E0    DB    	0DH,0AH,'No pudo abrirse el archvio$'
+ERROR_E1	DB	  	0DH,0AH,'No pudo escribirse en el archivo$'
+ERROR_L1	DB	  	0DH,0AH,'No pudo leerse del archivo$'
+ERROR_L2	DB	  	0DH,0AH,'No se realizo la lectura completa del archivo$'
+ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
+N			DW	  	0
+REG			DW    	?
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -262,9 +264,7 @@ ENTR 		ENDP
 ; Controla el ingreso de las opciones
 ;-----------------------------------------------------------------------------------------------------
 INGRESO   	PROC  NEAR
-REP_ING2: 	CALL  ENTR
-			LEA   DX, MSJMENU1                ;Imprime la petición de ingreso al usuario.
-			CALL  MOSTRAR
+REP_ING2: 	DESP  MSJMENU1
 			MOV   AH, 01H
 			INT   21H
 			SUB   AL, 30H
@@ -276,8 +276,7 @@ REP_ING2: 	CALL  ENTR
 			SUB	  OPCION, 1
 			RET                               ;Si se llega aquí, el ingreso es válido.
 INVALIDO2:	CALL  ENTR
-			LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
-			CALL  MOSTRAR
+			DESP M_INGIN
 			CALL  ENTR                        ;Se cambia de línea.
 			JMP   REP_ING2
 INGRESO   	ENDP
@@ -289,8 +288,7 @@ INGRESO   	ENDP
 ;TOMADO DEL PROYECTO FINAL DE ORGANIZACION DE COMPUTADORAS, AUTORES: Juan Pablo Argueta (yo), Oscar Castaneda
 ;-----------------------------------------------------------------------------------------------------
 GET_ING  	PROC  NEAR
-REP_ING: 	LEA   DX, MSJ                   ;Imprime la petición de ingreso al usuario.
-			CALL  MOSTRAR
+REP_ING: 	DESP MSJ
 			MOV   AH, 01H
 			INT   21H
 			CMP   AL, 30H                     ;Se verifica que el ingreso no esté debajo del valor inferior.
@@ -306,8 +304,7 @@ REP_ING: 	LEA   DX, MSJ                   ;Imprime la petición de ingreso al usu
 			JA    INVALIDO                    ;De estarlo, se repite la petición.
 			MOV   SECD, AL
 			RET                               ;Si se llega aquí, el ingreso el válido.
-INVALIDO:	LEA   DX, M_INGIN                 ;De ser invalido el ingreso, se imprime un mensaje informándolo.
-			CALL  MOSTRAR
+INVALIDO:	DESP M_INGIN
 			CALL  ENTR                       ;Se cambia de línea.
 			JMP   REP_ING                     ;Se repite el ingreso.
 GET_ING  	ENDP
@@ -338,8 +335,8 @@ CONCA   	ENDP
 PRO1 		PROC  NEAR
 			ABRIR_A NOMBRE, 01H
 			MOV_APUN MANEJ, 0, 02H
-INI:		LEA   DX, MSJCADENA
-			CALL  MOSTRAR
+INI:		DESP LINE
+			DESP MSJCADENA
 			MOV   AH, 0AH
 			LEA   DX, LISTA
 			INT   21H
@@ -350,16 +347,14 @@ INI:		LEA   DX, MSJCADENA
 			CALL  GET_ING
 			CALL  CONCA
 			CALL  ENTR
-			LEA   DX, LINEA
-			CALL  MOSTRAR
+			DESP LINEA
 			CALL  ESCRIBIR_AR
 			CERRAR_A MANEJ
 			INC   CONT_REG
 			INC   CONT_REG1
 			LIMPIAR LINEA, 15
 			RET
-SALIR:		LEA   DX, NO_CAD
-			CALL  MOSTRAR
+SALIR:		DESP NO_CAD
 			JMP   INI	
 PRO1 		ENDP
 
@@ -399,6 +394,7 @@ CONCAD  	ENDP
 ;-----------------------------------------------------------------------------------------------------
 PRO2 		PROC  NEAR
 			ABRIR_A NOMBRE, 00H
+			DESP LINE
 			COPIAR_CAD M_ING2, MSJ, 31
 			CALL  GET_ING
 			CALL  CONCAD
@@ -417,6 +413,7 @@ PRO2 		ENDP
 ;-----------------------------------------------------------------------------------------------------
 PRO3 		PROC  NEAR
 			ABRIR_A NOMBRE, 00H
+			DESP LINE
 			XOR   CX, CX
 			MOV   CL, CONT_REG1
 			MOV   REG, 0
@@ -439,6 +436,7 @@ PRO3 		ENDP
 ; Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO4		PROC  NEAR
+DESP LINE
 			RET
 PRO4		ENDP
 
@@ -467,8 +465,7 @@ MAIN   		PROC  FAR
 			MOV   DS, AX
 			MOV   ES, AX
 			CALL  CREAR_AR
-ASD:    	LEA   DX, MSJMENU
-			CALL  MOSTRAR
+ASD: 		DESP MSJMENU
 			CALL  ENTR
 			CALL  INGRESO
 			CALL  ENTR
