@@ -441,8 +441,8 @@ PRO3 		ENDP
 ; Procedimiento para obtener el siguiente registro al solicitado.
 ;-----------------------------------------------------------------------------------------------------
 LINEA_SIG	PROC NEAR
-			ADD N, 17
 			CALL CONCAD
+			ADD N, 17
 			CALL MULTI
 			RET
 LINEA_SIG	ENDP
@@ -451,19 +451,23 @@ LINEA_SIG	ENDP
 ; Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO4		PROC  NEAR
-			ABRIR_A NOMBRE, 02H
 			DESP LINE
-			DESP M_ING3
+			COPIAR_CAD M_ING3, MSJ, 35
 			CALL GET_ING
-HACERO:		CALL LINEA_SIG
+HACERO:		ABRIR_A NOMBRE, 00H
+			CALL LINEA_SIG
 			MOV LONGITUD, 17
 			CALL LEER_AR
+			CERRAR_A MANEJ
+			ABRIR_A NOMBRE, 01H
 			SUB N, 34
 			CALL LINEA_SIG
 			CALL ESCRIBIR_AR
 			MOV AX, CONT_REG
+			CALL LINEA_SIG
 			CMP N, AX
-			JB HACERO 
+			JB HACERO
+			CERRAR_A MANEJ
 			RET
 PRO4		ENDP
 
