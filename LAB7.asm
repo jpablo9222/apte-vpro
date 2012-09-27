@@ -183,6 +183,7 @@ ERROR_L2	DB	  	0DH,0AH,'No Existe el Registro Solicitado$'
 ERROR_M		DB	  	0DH,0AH,'No se realizo el movimiento del apuntador.$'
 N			DW	  	0
 REG			DW    	?
+SIG_CADENA	DW		0
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -369,7 +370,7 @@ MULTI		PROC  NEAR
 			MOV   AL, 17
 			MUL   N
 			MOV   N, AX
-			MOV_APUN MANEJ, N, 00H
+			MOV_APUN MANEJ, N, 00H		
 			MOV   N, AX
 			POP   AX
 			RET
@@ -405,6 +406,7 @@ PRO2 		PROC  NEAR
 			CALL  ENTR
 			MOV   LONGITUD, 17
 			CALL  LEER_AR
+			MOV_APUN MANEJ, 0, 02H
 			DESP LECTURA
 			CERRAR_A MANEJ
 			RET
@@ -438,7 +440,17 @@ PRO3 		ENDP
 ; Procedimiento de la tabla
 ;-----------------------------------------------------------------------------------------------------
 PRO4		PROC  NEAR
-DESP LINE
+			ABRIR_A NOMBRE, 00H
+			DESP LINE
+			COPIAR_CAD M_ING3, MSJ, 34
+			CALL GET_ING
+			CALL CONCAD
+			CALL MULTI
+			MOV SIG_CADENA, N
+			MOV LONGITUD, 17
+			ADD SIG_CADENA, 17
+			CALL LEER_AR
+
 			RET
 PRO4		ENDP
 
