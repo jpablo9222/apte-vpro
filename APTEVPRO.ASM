@@ -67,13 +67,26 @@ RESTAM		MACRO MINUENDO, SUSTRAENDO
 			ENDM
 
 ;***********************************************************************************
-; Macro para restar variables.
+; Macro para sumar variables.
 ;***********************************************************************************
 SUMAM		MACRO SUMANDO1, SUMANDO2
 			PUSHA
 			MOV AX, SUMANDO1
 			ADD AX, SUMANDO2
 			MOV SUMA, AX
+			POPA
+			ENDM
+
+;***********************************************************************************
+; Macro para dividir variables.
+;***********************************************************************************			
+DIVIDIR		DIVIDENDO, DIVISOR
+			PUSHA
+			MOV BX, DIVISOR
+			MOV DX:AX, DIVIDENDO
+			DIV BX
+			MOV COCIENTE, AX
+			MOV RESIDUO, DX
 			POPA
 			ENDM
 			
@@ -94,7 +107,7 @@ MOVM 		MACRO SRC, DTN
 	.DATA
 
 .386
-CARACTER_NULL	DB	DUP (00H), '$'			
+CARACTER_NULL	DB	00H, '$'			
 CARACTER		DB	 '*$'
 CADENA_DEST		DB	'Hoy es un bonito dia...    ', '$'
 LONG_STRING1	DW	30
@@ -102,13 +115,14 @@ CANT_CAR		DW	23
 APUNTADOR_CAD	DW 	5
 COP_APUNT_CAD	DW	?
 CADENA_AUX		DB 	'                              ',0DH, 0AH,'$'
-LONG_AUX		DB	30
+LONG_AUX		DB	32
 S_2_INS			DB	'***','$'
 LONG_STRING2	DW	3
 LIMPIA			DB	30 DUP (' ')							 ; cadena para limpiar línea.
 LONG_COP		DW	?
 CONT_NULLS		DW  0
 SUMA			DW  ?
+COCIENTE		DW	?
 
 	.CODE
 INSERTAR_C 		PROC NEAR
@@ -132,10 +146,11 @@ INSERTAR_CAD	PROC NEAR
 				MOV BX, APUNTADOR_CAD
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
 				COPIAR_CAD S_2_INS, CADENA_DEST[BX], LONG_STRING2
+				ADD BX, LONG_STRING2
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
 				LIMPIAR CADENA_AUX, LONG_AUX
-				DESP CADENA_DEST
-				SUMAM CANT_CAR, LONG_COP
+				SUMAM CANT_CAR, LONG_STRING2
+				MOVM SUMA, CANT_CAR
 				POPA
 				RET
 INSERTAR_CAD	ENDP
@@ -159,6 +174,8 @@ COP_BS			ENDP
 
 BACKSPACE		PROC NEAR
 				PUSHA
+				CMP APUNTADOR_CAD, 0
+				JE  SALE_BS
 IN_BS:			MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				DEC COP_APUNT_CAD
 				MOV BX, COP_APUNT_CAD
@@ -166,20 +183,44 @@ IN_BS:			MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				CMP AL, 00H
 				JE	ELIM_NULL
 				CALL COP_BS
-				POPA
+SALE_BS:		POPA
 				RET
 ELIM_NULL:		CALL COP_BS
 				JMP IN_BS
 BACKSPACE		ENDP
 
+SUPRIMIR		PROC NEAR
+				PUSHA
+				MOV AX, APUNTADOR_CAD
+				CMP AX, LONG_STRING1
+				JE SALE_SUPR
+				INC APUNTADOR_CAD
+				CALL BACKSPACE
+				DEC APUNTADOR_CAD
+SALE_SUPR:		POPA
+				RET
+SUPRIMIR		ENDP
+
+CORTAR_CAD		PROC NEAR
+				PUSHA
+				DIVIDIR APUNTADOR_CAD, 80
+				
+				POPA
+				RET
+CORTAR_CAD		ENDP
+
+
+
 
 MAIN PROC FAR
 
 		INICIO
-		
+		;DESP CADENA_DEST
 		;CALL INSERTAR_C
-		CALL INSERTAR_CAD
-		
+		;CALL INSERTAR_CAD
+		;CALL BACKSPACE
+		CALL SUPRIMIR
+		DESP CADENA_DEST
 
 		MOV   AX, 4C00H		;salida al DOS
 		INT   21H
