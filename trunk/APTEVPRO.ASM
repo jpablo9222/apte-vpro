@@ -65,6 +65,28 @@ RESTAM		MACRO MINUENDO, SUSTRAENDO
 			MOV LONG_COP, AX
 			POPA
 			ENDM
+
+;***********************************************************************************
+; Macro para restar variables.
+;***********************************************************************************
+SUMAM		MACRO SUMANDO1, SUMANDO2
+			PUSHA
+			MOV AX, SUMANDO1
+			ADD AX, SUMANDO2
+			MOV SUMA, AX
+			POPA
+			ENDM
+			
+;***********************************************************************************
+; Macro para "mover de memoria a memoria".
+;***********************************************************************************
+MOVM 		MACRO SRC, DTN
+			PUSH AX
+			MOV AX, SRC			; Fuente
+			MOV DTN, AX			; Destino
+			POP AX
+			ENDM
+			
 	.MODEL SMALL
 	.STACK 64
 ;-------------------------------------------------------------------------------------------
@@ -77,12 +99,15 @@ CADENA_DEST		DB	'Hoy es un bonito dia...    ', '$'
 LONG_STRING1	DW	30
 CANT_CAR		DW	23	
 APUNTADOR_CAD	DW 	5
+COP_APUNT_CAD	DW	?
 CADENA_AUX		DB 	'                              ',0DH, 0AH,'$'
 LONG_AUX		DB	30
 S_2_INS			DB	'***','$'
 LONG_STRING2	DW	3
 LIMPIA			DB	30 DUP (' ')							 ; cadena para limpiar línea.
 LONG_COP		DW	?
+CONT_NULLS		DW  0
+SUMA			DW  ?
 
 	.CODE
 INSERTAR_C 		PROC NEAR
@@ -93,8 +118,8 @@ INSERTAR_C 		PROC NEAR
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
 				COPIAR_CAD CARACTER, CADENA_DEST[BX], 1
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX+1], LONG_COP
-				ADD LONG_STRING1, BX
 				LIMPIAR CADENA_AUX, LONG_AUX
+				INC CANT_CAR
 				POPA
 				RET
 INSERTAR_C		ENDP
@@ -104,22 +129,29 @@ INSERTAR_CAD	PROC NEAR
 				LIMPIAR CADENA_AUX, LONG_AUX
 				RESTAM CANT_CAR, APUNTADOR_CAD
 				MOV BX, APUNTADOR_CAD
-				SUB LONG_STRING1, BX
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
 				COPIAR_CAD S_2_INS, CADENA_DEST[BX], LONG_STRING2
-				ADD BX, LONG_STRING2
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
-				ADD LONG_STRING1, BX
 				LIMPIAR CADENA_AUX, LONG_AUX
 				DESP CADENA_DEST
+				SUMAM CANT_CAR, LONG_COP
 				POPA
 				RET
 INSERTAR_CAD	ENDP
 
 BACKSPACE		PROC NEAR
-				
+				MOVM APUNTADOR_CAD, COP_APUNT_CAD
+				DEC COP_APUNT_CAD
+				MOV BX, COP_APUNT_CAD
+				MOV AL, [BX]
+				CMP AL, 00H
+				JE	ELIM_NULL
 				RET
+ELIM_NULL:		
+				CALL INSERTAR_CAD				
 BACKSPACE		ENDP
+
+
 MAIN PROC FAR
 
 		INICIO
