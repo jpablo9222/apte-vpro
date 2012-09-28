@@ -167,6 +167,7 @@ DESCRIP	    DB    	12 DUP (' ')                            ; caracteres introduc
 LINEA	    DB    	15 DUP (' '), 0DH, 0AH, '$'
 LIMPIA		DB	  	15 DUP (' ')							 ; cadena para limpiar línea.
 LECTURA		DB    	17 DUP (' ')
+PRUEBA		DB		25 DUP (?)
 ENTR1       DB    	0DH,0AH,'$'
 NO_CAD	   	DB    	'Lo lamento, no ha ingresado alguna cadena.', 0DH, 0AH, '$'
 SECD    	DB    	' '
@@ -491,7 +492,8 @@ HACERO:		ABRIR_A NOMBRE, 00H
 			MOVM N, CONT_REG2
 			SUB N, 1
 			CALL LINEA_SIG
-			LIMPIAR LINEA, 17
+			COPIAR_CAD LIMPIA, LINEA, 16
+			LIMPIAR LINEA, 15
 			CALL ESCRIBIR_AR
 			CERRAR_A MANEJ
 			RET
@@ -522,6 +524,7 @@ MAIN   		PROC  FAR
 			MOV   DS, AX
 			MOV   ES, AX
 			CALL  CREAR_AR
+			DESP PRUEBA
 ASD: 		DESP LINE
 			DESP MSJMENU
 			CALL  ENTR
