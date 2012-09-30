@@ -148,7 +148,7 @@ INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 				ENDM
 			
 	.MODEL SMALL
-	.STACK 64
+	.STACK 1024
 	.386
 ;-------------------------------------------------------------------------------------------
 ; Inicio de Datos
@@ -158,13 +158,13 @@ INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 CARACTER_NULL	DB	00H
 STR_ERROR_PEG	DB  'ERROR: La cadena que desea pegar es mayor a la capacidad de almacenamiento del programa$'			
 CARACTER		DB	 '*$'
-CADENA_DEST		DB	'Hoy es un bonito dia...                 *                                      ', '$'
+CADENA_DEST		DB	'Hoy es un bonito dia...                 *                            ', '$'
 LONG_STRING1	DW	80
 CANT_CAR		DW	41	
 APUNTADOR_CAD	DW 	6
 COP_APUNT_CAD	DW	?
-CADENA_AUX		DB 	40 DUP (' '),'$'
-LONG_AUX		DW	40
+CADENA_AUX		DB 	80 DUP (' '),'$'
+LONG_AUX		DW	80
 S_2_INS			DB	'**********','$'
 LONG_STRING2	DW	10
 LIMPIA			DB	40 DUP (' ')							 ; cadena para limpiar línea.
@@ -172,16 +172,16 @@ LONG_COP		DW	?
 SUMA			DW  ?
 COCIENTE		DW	?
 RESIDUO			DW 	?
-CADENA_COPIAR	DB	40 DUP (' '), '$'
-LONG_CADP		DW	40
+CADENA_COPIAR	DB	80 DUP (' '), '$'
+LONG_CADP		DW	80
 APUNT_CORTAR	DW	0
 CONT_NULL		DW 	0
 FILA_ACTUAL 	DB	?
 COL_ACTUAL 		DB	?
 NUM_PAG			DB	?
-LONG_LINE		DW	40
+LONG_LINE		DW	80
 NUM_LINE		DB	?
-STR_TAB			DB 	' ',0H,0H,0H,0H,0H,0H,0H,0H,' $'
+STR_TAB			DB 	' ',0H,0H,0H,0H,0H,0H,0H,0H,0H,' $'
 LONG_TAB		DW	10
 CONT_TAB		DW	0
 STRING_NULL		DB	40 DUP (0H), '$'
@@ -487,9 +487,10 @@ MAIN PROC FAR
 		;CALL MOVC_DER
 		;CALL MOVC_UP
 		;CALL MOVC_DOWN
-		;CALL TABULADOR
+		CALL TABULADOR
 		;CALL MOVC_IZ
-		;CALL SUPRIMIR
+		MOV APUNTADOR_CAD, 7
+		CALL SUPRIMIR
 		;CALL COPIA_CAD
 		;CALL PEGA_CAD
 		;DESP CADENA_COPIAR
