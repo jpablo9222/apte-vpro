@@ -118,7 +118,6 @@ ELIMINAR_STRING	MACRO VECES
 CIC_ELI:	CALL BACKSPACE
 			LOOP CIC_ELI
 			POPA
-			RET
 			ENDM	
 
 IMP_NULLS	MACRO CADENA, APUNTADOR, VECES
@@ -182,113 +181,129 @@ COL_ACTUAL 		DB	?
 NUM_PAG			DB	?
 LONG_LINE		DW	40
 NUM_LINE		DB	?
-STR_TAB			DB 	0H,0H,0H,0H,0H,0H,0H,0H,0H,0H
+STR_TAB			DB 	' ',0H,0H,0H,0H,0H,0H,0H,0H,0H
 LONG_TAB		DW	10
 CONT_TAB		DW	0
 STRING_NULL		DB	40 DUP (0H), '$'
 
 
 	.CODE
-INSERTAR_C 		PROC NEAR
-				PUSHA
-				LIMPIAR CADENA_AUX, LONG_AUX
-				RESTAM CANT_CAR, APUNTADOR_CAD
-				MOV BX, APUNTADOR_CAD
-				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
-				COPIAR_CAD CARACTER, CADENA_DEST[BX], 1
-				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX+1], LONG_COP
-				LIMPIAR CADENA_AUX, LONG_AUX
-				INC CANT_CAR
-				POPA
-				RET
-INSERTAR_C		ENDP
 
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento auxiliar para borrar el caracter anterior a la posición del apuntador:
+; Parámetros: 	CADENA_AUX Y LONG_AUX: cadena donde se insertan los caracteres que no se borrarán.
+;				CONT_NULL: contador de caracteres nullos por suprimir en caso de que existieran.
+;				CANT_CAR: contador de caracteres introducidos en el String.
+;				CADENA_DEST: cadena sobre la cual se trabaja durante el programa. 
+;----------------------------------------------------------------------------------------------
 COP_BS			PROC NEAR
-				PUSHA
-				LIMPIAR CADENA_AUX, LONG_AUX
-				MOV AX, CONT_NULL
-				SUB APUNTADOR_CAD, AX
-				RESTAM CANT_CAR, APUNTADOR_CAD
+				;PUSHA
+				LIMPIAR CADENA_AUX, LONG_AUX					
+				MOV AX, CONT_NULL								
+				SUB APUNTADOR_CAD, AX								; Se coloca el apuntador en la posición adecuada.
+				RESTAM CANT_CAR, APUNTADOR_CAD						; Se obtiene la longitud de cadena a copiar.
 				MOV BX, APUNTADOR_CAD
-				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
+				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP 	;Se copia a la cadena auxiliar
 				DEC BX
-				MOV APUNTADOR_CAD, BX
-				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
+				MOV APUNTADOR_CAD, BX								; Se mueve el apuntador a la nueva posición.
+				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP 	;Se copia la cadena auxiliar en la nueva posición.
 				LIMPIAR CADENA_AUX, LONG_AUX
-				DEC CANT_CAR
+				DEC CANT_CAR									
 				MOV BX, CANT_CAR
-				COPIAR_CAD CARACTER_NULL, CADENA_DEST[BX], 1
-				POPA
+				COPIAR_CAD CARACTER_NULL, CADENA_DEST[BX], 1		; Se inserta un NULL en la última posición de la cadena anterior.
+				;POPA
 				RET
 COP_BS			ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento auxiliar para borrar el caracter anterior a la posición del apuntador:
+; Parámetros: 	CADENA_AUX Y LONG_AUX: cadena donde se insertan los caracteres que no se borrarán.
+;				CONT_NULL: contador de caracteres nullos por suprimir en caso de que existieran.
+;				CANT_CAR: contador de caracteres introducidos en el String.
+;				COP_APUNT_CAD: proveniente del método principal BACKSPACE
+;				CADENA_DEST: cadena sobre la cual se trabaja durante el programa. 
+;----------------------------------------------------------------------------------------------
 COP_BSNULL		PROC NEAR
 				PUSHA
-NULL_AG:		DEC COP_APUNT_CAD
+NULL_AG:		DEC COP_APUNT_CAD								
 				MOV BX, COP_APUNT_CAD
-				MOV AL, CADENA_DEST[BX]
-				CMP AL, 00H
+				MOV AL, CADENA_DEST[BX]								; Se compara con 00H en búsqueda de
+				CMP AL, 00H											; más NULL por eliminar.
 				JNE	SAL_NULL
 				INC CONT_NULL
 				DEC CANT_CAR
 				JMP NULL_AG
-SAL_NULL:		MOV CX, CONT_NULL
+SAL_NULL:		MOV CX, CONT_NULL								
 				SUMAM CANT_CAR, CONT_NULL
-				RESTAM SUMA, APUNTADOR_CAD
-				MOV BX, APUNTADOR_CAD
-				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
+				RESTAM SUMA, APUNTADOR_CAD							; Se obtiene la longitud de cadena a copiar.
+				MOV BX, APUNTADOR_CAD								
+				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP	; Se copia la cadena auxiliar en la nueva posición.
 				INC COP_APUNT_CAD
 				MOV BX, COP_APUNT_CAD
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
-				IMP_NULLS CADENA_DEST, CANT_CAR, CONT_NULL
+				IMP_NULLS CADENA_DEST, CANT_CAR, CONT_NULL			; Se imprimen los NULL necesarios para eliminar los caracteres.
 				POPA
 				RET
 COP_BSNULL		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para borrar el caracter anterior a la posición del apuntador:
+; Parámetros: 	APUNTADOR_CAD: para conocer el caracter a borrar.
+;				CONT_NULL: contador de caracteres nullos por suprimir en caso de que existieran.
+;				CANT_CAR: contador de caracteres introducidos en el String.
+;				CADENA_DEST: cadena sobre la cual se trabaja durante el programa. 
+;----------------------------------------------------------------------------------------------
 BACKSPACE		PROC NEAR
 				PUSHA
-				CMP APUNTADOR_CAD, 0
-				JE  SALE_BS
-IN_BS:			MOVM APUNTADOR_CAD, COP_APUNT_CAD
-				DEC COP_APUNT_CAD
-				MOV BX, COP_APUNT_CAD
-				MOV AL, CADENA_DEST[BX]
-				CMP AL, 00H
-				JE	ELIM_NULL
+				CMP APUNTADOR_CAD, 0								; Se comprueba que no esté en la primera columna y fila
+				JE  SALE_BS											; del áreaescritura, si lo está, no ejecuta la acción.
+IN_BS:			MOVM APUNTADOR_CAD, COP_APUNT_CAD					; Se hace una copia del apuntador para guardar el mismo.
+				DEC COP_APUNT_CAD								
+				MOV BX, COP_APUNT_CAD							
+				MOV AL, CADENA_DEST[BX]								; Se obtiene el caracter anterior al apuntador, si es NULL
+				CMP AL, 00H											; se ejecutan instrucciones para eliminar todos los NULL,
+				JE	ELIM_NULL										; de lo contario, se elimina solamente un caracter del String.
 				CALL COP_BS
 SALE_BS:		POPA
 				RET
-				MOV CONT_NULL, 0
-ELIM_NULL:		INC CONT_NULL
+				MOV CONT_NULL, 0									; Se inicializa CONT_NULL
+ELIM_NULL:		INC CONT_NULL										
 				DEC CANT_CAR
-				CALL COP_BSNULL
+				CALL COP_BSNULL										
 				JMP IN_BS
 BACKSPACE		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para borrar caracter donde se encuentra posicionado el apuntador, utiliza a 
+; BACKSPACE para su total funcionamiento.
+; Parámetros: 	APUNTADOR_CAD: para conocer el caracter a borrar.
+;				CONT_NULL: contador de caracteres nullos por suprimir en caso de que existieran.
+;				CANT_CAR: contador de caracteres introducidos en el String.
+;----------------------------------------------------------------------------------------------
 SUPRIMIR		PROC NEAR
 				PUSHA
-				MOV AX, APUNTADOR_CAD
+				MOV AX, APUNTADOR_CAD								; Si está al final del String, no ejecuta la acción.
 				CMP AX, LONG_STRING1
 				JE SALE_SUPR
 				MOV BX, APUNTADOR_CAD
-				MOV AL, CADENA_DEST[BX]
-				CMP AL, 00H
-				JE SUPR_NULL
-				CMP AL, 07H
+				MOV AL, CADENA_DEST[BX]								; Se compara el caracter de la posición en búsqueda 
+				CMP AL, 00H											; de algún NULL, si los hay, se accede a su correcto
+				JE SUPR_NULL										; procesamiento.
+				CMP AL, 01H											; 01H funciona como caracter indicador de finalizado.
 				JE SALE_SUPR
 				INC APUNTADOR_CAD
 				CALL BACKSPACE
 SALE_SUPR:		POPA
 				RET
-SUPR_NULL:		MOV CONT_NULL, 0
-				MOV CADENA_DEST[BX], 01H
+SUPR_NULL:		MOV CONT_NULL, 0									; Se inicializa CONT_NULL
+				MOV CADENA_DEST[BX], 01H							; Se sustituye el primer caracter por uno cualquiera.
 CONT_N:			MOV AX, APUNTADOR_CAD
-				CMP AX, LONG_STRING1
+				CMP AX, LONG_STRING1								; Se corrobora que no haya alcanzado el final del String.
 				JE SALE_SUPR
 				INC APUNTADOR_CAD
 				MOV BX, APUNTADOR_CAD
-				MOV AL, CADENA_DEST[BX]
+				MOV AL, CADENA_DEST[BX]								; Se compara en búsqueda de más NULL.
 				CMP AL, 00H
 				JE CONT_N
 				CALL BACKSPACE
@@ -473,7 +488,7 @@ MAIN PROC FAR
 		;CALL MOVC_UP
 		;CALL MOVC_DOWN
 		CALL TABULADOR
-		SUB APUNTADOR_CAD, 10
+		CALL MOVC_IZ
 		CALL SUPRIMIR
 		;CALL COPIA_CAD
 		;CALL PEGA_CAD
