@@ -109,7 +109,7 @@ INSERTAR_C 	MACRO CARACTER
 			INC CANT_CAR
 			POPA
 			RET
-INSERTAR_C	ENDM
+			ENDM
 
 ;***********************************************************************************
 ; Macro para desplegar una caracter.
