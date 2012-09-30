@@ -181,7 +181,7 @@ COL_ACTUAL 		DB	?
 NUM_PAG			DB	?
 LONG_LINE		DW	40
 NUM_LINE		DB	?
-STR_TAB			DB 	' ',0H,0H,0H,0H,0H,0H,0H,0H,0H
+STR_TAB			DB 	' ',0H,0H,0H,0H,0H,0H,0H,0H,' $'
 LONG_TAB		DW	10
 CONT_TAB		DW	0
 STRING_NULL		DB	40 DUP (0H), '$'
@@ -198,7 +198,7 @@ STRING_NULL		DB	40 DUP (0H), '$'
 ;				CADENA_DEST: cadena sobre la cual se trabaja durante el programa. 
 ;----------------------------------------------------------------------------------------------
 COP_BS			PROC NEAR
-				;PUSHA
+				PUSHA
 				LIMPIAR CADENA_AUX, LONG_AUX					
 				MOV AX, CONT_NULL								
 				SUB APUNTADOR_CAD, AX								; Se coloca el apuntador en la posición adecuada.
@@ -212,7 +212,7 @@ COP_BS			PROC NEAR
 				DEC CANT_CAR									
 				MOV BX, CANT_CAR
 				COPIAR_CAD CARACTER_NULL, CADENA_DEST[BX], 1		; Se inserta un NULL en la última posición de la cadena anterior.
-				;POPA
+				POPA
 				RET
 COP_BS			ENDP
 
@@ -487,9 +487,9 @@ MAIN PROC FAR
 		;CALL MOVC_DER
 		;CALL MOVC_UP
 		;CALL MOVC_DOWN
-		CALL TABULADOR
-		CALL MOVC_IZ
-		CALL SUPRIMIR
+		;CALL TABULADOR
+		;CALL MOVC_IZ
+		;CALL SUPRIMIR
 		;CALL COPIA_CAD
 		;CALL PEGA_CAD
 		;DESP CADENA_COPIAR
