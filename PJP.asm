@@ -236,7 +236,7 @@ CONTINUAR:		MOV   BX, CANT_CAR
 SUP:			MOV	  APUNT, SI
 				SUB   APUNT
 				CALL  SUPRIMIR
-				JMP CONTINUAR
+				JMP   CONTINUAR
 REND_CAD		ENDP
 
 ;--------------------------------------------------------------------------------------------
