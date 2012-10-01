@@ -23,6 +23,16 @@ DESP		MACRO CADENA
 			ENDM
 			
 ;***********************************************************************************
+; Macro para recibir entrada de teclado.
+;***********************************************************************************
+GET_ET		MACRO CADENA
+			MOV AH, 10H			; DESPLEGAR MENSAJE
+			INT 16H
+			MOV ASCII, AL
+			MOV RASTREO, AH
+			ENDM
+			
+;***********************************************************************************
 ; Macro para limpiar una cadena.
 ;***********************************************************************************
 LIMPIAR		MACRO CADENA, LONGITUD
@@ -175,6 +185,39 @@ COL_ACTUAL		DB	?
 ; PROCEDIMIENTOS
 ;-------------------------------------------------------------------------------------------
 
+;-------------------------------------------------------------------------------------------
+; fLUJO LÓGICO DEL PROGRAMA
+;-------------------------------------------------------------------------------------------
+FLUJO			PROC  NEAR
+				
+				GET_ET
+				CMP   ASCII, 0
+				JE    FUN_ES
+				INSERT_C ASCII 
+				CMP   ASCII, 13
+				JNE   TABB
+				INC   FILA_ACTUAL
+				MOV   COL_ACTUAL, 0
+				SET_CUR PAG_ACTUAL, COL_ACTUAL, FILA_ACTUAL
+TABB:			CMP   ASCII, 09
+				JNE	  BCKS
+				CMP   COL_ACTUAL, 68
+				JA    FIN_L
+				INC   COL_ACTUAL, 11
+BCKS:			CMP   ASCII, 08
+
+				CMP   COL_ACTUAL, 79
+				JNE   MISMA_L
+				INC   FILA_ACTUAL
+				SET_CUR PAG_ACTUAL, 0, FILA_ACTUAL
+
+MISMA_L:		INC   COL_ACTUAL
+
+FIN_L:			MOV   COL_ACTUAL, 79
+
+FUN_ES:
+FLUJO			ENDP
+
 ;--------------------------------------------------------------------------------------------
 ; Necesita pasar a STRING, la cadena a renderizar, y en CANT_CAR, cantidad de caracteres de
 ; de dicha cadena.
@@ -214,12 +257,16 @@ RECORRER1:		CMP	  SI, COP_CANT_CAR
 				JE	  VERIFICAR
 				CMP	  CHAR, 13
 				JE	  ENTERR
+				CMP   CHAR, 09
+				JE    TAB
 IMPR:			DESPC CHAR
 				INC   SI
 				JMP   RECORRER1
 ENTERR:			CALL  HAY_ENTER
 				JMP   RECORRER1
 VERIFICAR:		CALL  BAJAR_P
+				JMP   RECORRER1
+TAB:			CALL  HAY_TAB
 				JMP   RECORRER1
 FIN:		    RET
 SET_STR			ENDP
@@ -260,6 +307,32 @@ VOLVER1:		INSERT_C 00H
 				LOOP VOLVER1
 				RET
 HAY_ENTER		ENDP
+
+;----------------------------------------------------------------------------------------------
+; Procedimiento para insertar 10 espacios en el String, simulando un tabulador. El primer y último
+; espacio es distinto a NULL para poder ubicarlo en el String. Si al insertarlo es mayor a la 
+; longitud del String, no se inserta.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				COP_APUNT_CAD: copia para auxiliar al apuntador definitivo del String.
+;				LONG_STRING1: Capacidad total del String. 
+;				CANT_CAR: Cantidad de caracteres ingresados por el usuario hasta el momento.
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;				CADENA_DEST: String principal del programa.
+;----------------------------------------------------------------------------------------------
+TABULADOR		PROC NEAR
+				PUSHA
+				MOVM APUNTADOR_CAD, COP_APUNT_CAD
+				MOV AX, LONG_STRING1
+				SUMAM CANT_CAR, LONG_TAB
+				CMP SUMA, AX
+				JA SALE_TAB
+				MOV AX, LONG_STRING1
+				CMP APUNTADOR_CAD, AX
+				JE SALE_TAB
+				INSERTAR_CAD STR_TAB, LONG_TAB
+SALE_TAB:		POPA
+				RET
+TABULADOR		ENDP
 
 MAIN		PROC  FAR
 			INICIO
