@@ -232,7 +232,7 @@ LONG_STRING1	DW	30
 CANT_CAR		DW	23	
 APUNTADOR_CAD	DW 	6
 COP_APUNT_CAD	DW	?
-CADENA_AUX		DB 	'                              ',0DH, 0AH,'$'
+CADENA_AUX		DB 	'                              ''$'
 LONG_AUX		DW	30
 S_2_INS			DB	'***','$'
 LONG_STRING2	DW	3
@@ -251,6 +251,7 @@ NUM_PAG			DB	?
 LONG_LINE		DW	30
 NUM_LINE		DB	?
 CONT_TAB		DB	0
+STR_TAB			DB	' ' 9 DUP (0H), '$'
 
 
 	.CODE
@@ -268,6 +269,9 @@ INSERTAR_C 		PROC NEAR
 				RET
 INSERTAR_C		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Macro para inicializar el área de datos
+;----------------------------------------------------------------------------------------------
 INSERTAR_CAD	PROC NEAR
 				PUSHA
 				LIMPIAR CADENA_AUX, LONG_AUX

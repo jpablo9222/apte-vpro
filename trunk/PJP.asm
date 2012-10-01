@@ -111,6 +111,22 @@ INSERTAR_C 	MACRO CARACTER
 			RET
 			ENDM
 
+INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
+				PUSHA
+				LIMPIAR CADENA_AUX, LONG_AUX
+				RESTAM CANT_CAR, APUNTADOR_CAD
+				MOV BX, APUNTADOR_CAD
+				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
+				COPIAR_CAD CADENA_COPIAR, CADENA_DEST[BX], LONG_STRING2
+				ADD BX, LONG_CAD_COP
+				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
+				LIMPIAR CADENA_AUX, LONG_AUX
+				SUMAM CANT_CAR, LONG_STRING2
+				MOVM SUMA, CANT_CAR
+				POPA
+				RET
+				ENDM
+
 ;***********************************************************************************
 ; Macro para desplegar una caracter.
 ;***********************************************************************************
