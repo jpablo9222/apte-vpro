@@ -166,11 +166,12 @@ INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 CARACTER_NULL	DB	00H
 CARACTER		DB	 '*$'
 LONG_CAR		DW, 1
-CADENA_DEST		DB	1000 DUP(0FFH), '$'
-LONG_STRING1	DW	1000
-CANT_CAR		DW	995
+CADENA_DEST		DB	16 DUP (?),'$'
+LONG_STRING1	DW	16
+CANT_CAR		DW	16
 APUNTADOR_CAD	DW 	0
 COP_APUNT_CAD	DW	?
+COP2_APUNT_CAD	DW	?
 CADENA_AUX		DB 	2000 DUP (' '),'$'
 LONG_AUX		DW	2000
 S_2_INS			DB	'**********','$'
@@ -194,6 +195,11 @@ LONG_TAB		DW	10
 CONT_TAB		DW	0
 B_NEGRITAS		DB	0
 ;B_NEGRITAS		DB  2AH ;01011010B
+CADENA_PRUEBA	DB  31H,32H,33H,0H,0H,0H,35H,36H,31H,32H,0H,0H,35H,36H,0H,31H,'$'
+LONG_STR01		DW	16
+CANT_CARP		DW	16
+STRING			DB	16 DUP (?),'$'
+APUNT			DB 	0
 
 ;STRING_NULL		DB	40 DUP (0H), '$'
 
@@ -213,16 +219,16 @@ COP_BS			PROC NEAR
 				LIMPIAR CADENA_AUX, LONG_AUX					
 				MOV AX, CONT_NULL								
 				SUB APUNTADOR_CAD, AX								; Se coloca el apuntador en la posición adecuada.
-				RESTAM CANT_CAR, APUNTADOR_CAD						; Se obtiene la longitud de cadena a copiar.
+				RESTAM CANT_CAR, COP_APUNT_CAD						; Se obtiene la longitud de cadena a copiar.
 				MOV BX, APUNTADOR_CAD
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP 	;Se copia a la cadena auxiliar
 				DEC BX
 				MOV APUNTADOR_CAD, BX								; Se mueve el apuntador a la nueva posición.
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP 	;Se copia la cadena auxiliar en la nueva posición.
-				LIMPIAR CADENA_AUX, LONG_AUX
-				DEC CANT_CAR									
+				LIMPIAR CADENA_AUX, LONG_AUX									
 				MOV BX, CANT_CAR
 				COPIAR_CAD CARACTER_NULL, CADENA_DEST[BX], 1		; Se inserta un NULL en la última posición de la cadena anterior.
+				DEC CANT_CAR
 				POPA
 				RET
 COP_BS			ENDP
@@ -248,13 +254,19 @@ NULL_AG:		DEC COP_APUNT_CAD
 SAL_NULL:		MOV CX, CONT_NULL								
 				SUMAM CANT_CAR, CONT_NULL
 				RESTAM SUMA, APUNTADOR_CAD							; Se obtiene la longitud de cadena a copiar.
-				MOV BX, APUNTADOR_CAD								
+				CMP LONG_COP, 0
+				JE COP_1
+CONTI:			MOV BX, APUNTADOR_CAD								
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP	; Se copia la cadena auxiliar en la nueva posición.
+				DEC COP_APUNT_CAD
 				MOV BX, COP_APUNT_CAD
+				INC BX
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
 				IMP_NULLS CADENA_DEST, CANT_CAR, CONT_NULL			; Se imprimen los NULL necesarios para eliminar los caracteres.
 				POPA
 				RET
+COP_1:			INC LONG_COP
+				JMP CONTI
 COP_BSNULL		ENDP
 
 ;----------------------------------------------------------------------------------------------
@@ -266,10 +278,10 @@ COP_BSNULL		ENDP
 ;----------------------------------------------------------------------------------------------
 BACKSPACE		PROC NEAR
 				PUSHA
+				MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				CMP APUNTADOR_CAD, 0								; Se comprueba que no esté en la primera columna y fila
 				JE  SALE_BS											; del áreaescritura, si lo está, no ejecuta la acción.
-IN_BS:			MOVM APUNTADOR_CAD, COP_APUNT_CAD					; Se hace una copia del apuntador para guardar el mismo.
-				DEC COP_APUNT_CAD								
+IN_BS:			DEC COP_APUNT_CAD									; Se hace una copia del apuntador para guardar el mismo.
 				MOV BX, COP_APUNT_CAD							
 				MOV AL, CADENA_DEST[BX]								; Se obtiene el caracter anterior al apuntador, si es NULL
 				CMP AL, 00H											; se ejecutan instrucciones para eliminar todos los NULL,
@@ -293,26 +305,24 @@ BACKSPACE		ENDP
 ;----------------------------------------------------------------------------------------------
 SUPRIMIR		PROC NEAR
 				PUSHA
-				MOV AX, APUNTADOR_CAD								; Si está al final del String, no ejecuta la acción.
-				CMP AX, LONG_STRING1
-				JE SALE_SUPR
+				MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				MOV AX, CANT_CAR
-				CMP APUNTADOR_CAD, AX
+				CMP COP_APUNT_CAD, AX
 				JE SALE_SUPR
-				MOV BX, APUNTADOR_CAD
+				MOV BX, COP_APUNT_CAD
 				MOV AL, CADENA_DEST[BX]								; Se compara el caracter de la posición en búsqueda 
 				CMP AL, 00H											; de algún NULL, si los hay, se accede a su correcto
 				JE SUPR_NULL										; procesamiento.
 				CMP AL, 09H											; 01H funciona como caracter indicador de finalizado.
 				JE SUPR_NULL
-				INC APUNTADOR_CAD
+				INC COP_APUNT_CAD
 				CALL BACKSPACE
 SALE_SUPR:		POPA
 				RET
 SUPR_NULL:		MOV CONT_NULL, 0									; Se inicializa CONT_NULL
 				MOV CADENA_DEST[BX], 01H							; Se sustituye el primer caracter por uno cualquiera.
 CONT_N:			MOV AX, APUNTADOR_CAD
-				CMP AX, LONG_STRING1								; Se corrobora que no haya alcanzado el final del String.
+				CMP AX, CANT_CAR									; Se corrobora que no haya alcanzado el final del String.
 				JE SALE_SUPR
 				INC APUNTADOR_CAD
 				MOV BX, APUNTADOR_CAD
@@ -680,6 +690,36 @@ AC_NEGRITAS:	OR DL, 00001000B
 				JMP IN_NEG				
 NEGRITAS		ENDP
 
+;--------------------------------------------------------------------------------------------
+; Necesita pasar a STRING, la cadena a renderizar, y en CANT_CAR, cantidad de caracteres de
+; de dicha cadena.
+;--------------------------------------------------------------------------------------------
+
+REND_CAD		PROC  NEAR
+				LEA   SI, CADENA_DEST
+RECORRER:		LODSB
+				INC APUNTADOR_CAD
+				CMP	  AL, 00H
+				JE    SUP
+CONTINUAR:		MOV   BX, CANT_CAR
+				DEC	  BX
+				LEA   DX, STRING[BX]
+				CMP   DX, SI
+				JAE	  RECORRER
+				RET
+SUP:			DEC   APUNTADOR_CAD
+				CALL  SUPRIMIR
+				JMP   CONTINUAR
+REND_CAD		ENDP
+
+
+
+
+
+
+
+
+
 
 MAIN PROC FAR
 
@@ -700,15 +740,16 @@ MAIN PROC FAR
 		;CALL PEGA_CAD
 		;DESP CADENA_COPIAR
 		;INSERTAR_CAD CARACTER, LONG_CAR
-		MOV APUNTADOR_CAD, 00
-		CALL INSERTAR_C
-		CALL INSERTAR_C
-		CALL INSERTAR_C
+		;DESP CADENA_PRUEBA
+		;MOV APUNTADOR_CAD, 00
+		;CALL INSERTAR_C
+		;CALL INSERTAR_C
+		;CALL INSERTAR_C
 		;CALL INSERTAR_C
 		;CALL INSERTAR_C
 		;CALL TABULADOR
 		;SET_CUR 00, 00, 00
-		CALL NEGRITAS
+		;CALL NEGRITAS
 		;SET_CUR 00, 00, 24
 		;MOV AH, 09H
 		;MOV AL, 2AH
@@ -725,6 +766,10 @@ MAIN PROC FAR
 		;CALL INSERTAR_C
 		;DESP CADENA_DEST
 		;DESP CADENA_COPIAR
+		;MOVM CANT_CARP, CANT_CAR
+		COPIAR_CAD CADENA_PRUEBA, CADENA_DEST, 16
+		CALL REND_CAD
+		DESP CADENA_DEST
 		
 
 		MOV   AX, 4C00H		;salida al DOS
