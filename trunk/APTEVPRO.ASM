@@ -571,11 +571,13 @@ MOVC_DOWN		ENDP
 ;----------------------------------------------------------------------------------------------
 TABULADOR		PROC NEAR
 				PUSHA
+				MOVM APUNTADOR_CAD, COP_APUNT_CAD
+				DIVIDIR COP_APUNT_CAD, LONG_LINE
 				MOV AX, CANT_CAR
 				SUMAM APUNTADOR_CAD, LONG_TAB
 				CMP SUMA, AX
 				JA SALE_TAB
-				RESTAM LONG_LINE, APUNTADOR_CAD
+				RESTAM LONG_LINE, RESIDUO
 				MOV AX, LONG_COP
 				CMP LONG_COP, 0
 				JE LINE_DOWN
