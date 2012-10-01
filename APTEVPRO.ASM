@@ -9,6 +9,16 @@ GET_CUR    	MACRO  PAG
 			MOV    COL_ACTUAL, DL
 			ENDM
 
+;----------------------------------------------------------------------------------------------
+; Macro para posicionar el cursor en una posición específica en la pantalla.
+;----------------------------------------------------------------------------------------------		   
+SET_CUR    	MACRO  PAG, COL, FILA
+			MOV    AH, 02H
+			MOV    BH, PAG
+			MOV    DL, COL
+			MOV    DH, FILA
+			INT    10H
+			ENDM
 ;***********************************************************************************
 ; Macro para copiar una cadena a otra. 
 ;***********************************************************************************
@@ -282,6 +292,9 @@ SUPRIMIR		PROC NEAR
 				PUSHA
 				MOV AX, APUNTADOR_CAD								; Si está al final del String, no ejecuta la acción.
 				CMP AX, LONG_STRING1
+				JE SALE_SUPR
+				MOV AX, CANT_CAR
+				CMP APUNTADOR_CAD, AX
 				JE SALE_SUPR
 				MOV BX, APUNTADOR_CAD
 				MOV AL, CADENA_DEST[BX]								; Se compara el caracter de la posición en búsqueda 
@@ -585,6 +598,34 @@ SALE_C:			POPA
 				RET
 INSERTAR_C		ENDP
 
+HOME_STR		PROC NEAR
+				PUSHA
+				DIVIDIR APUNTADOR_CAD, LONG_LINE
+				RESTAM APUNTADOR_CAD, RESIDUO
+				MOVM LONG_COP, APUNTADOR_CAD
+				RET
+				POPA
+HOME_STR		ENDP
+
+END_STR			PROC NEAR
+				PUSHA
+				RESTAM LONG_STRING1, APUNTADOR_CAD
+				MOV AX, LONG_LINE
+				CMP AX, LONG_COP
+				JAE I_CANT_CAR
+				DIVIDIR APUNTADOR_CAD, LONG_LINE
+				RESTAM LONG_LINE, RESIDUO
+				SUMAM APUNTADOR_CAD, LONG_COP
+				MOVM SUMA, APUNTADOR_CAD
+				DEC APUNTADOR_CAD
+SALE_END:		POPA
+				RET
+I_CANT_CAR:		MOVM CANT_CAR, APUNTADOR_CAD
+				JMP SALE_END
+END_STR			ENDP	
+
+
+
 MAIN PROC FAR
 
 		INICIO
@@ -593,24 +634,25 @@ MAIN PROC FAR
 		;INSERTAR_CAD S_2_INS, LONG_STRING2
 		;CALL BACKSPACE
 		;CALL SUPRIMIR
-		CALL CORTAR_CAD
+		;CALL CORTAR_CAD
 		;CALL TABULADOR
 		;CALL MOVC_UP
 		;CALL MOVC_DOWN
-		;CALL MOVC_DER
-		;CALL MOVC_IZ
-		MOV APUNTADOR_CAD, 1760
 		;CALL MOVC_IZ
 		;CALL TABULADOR
 		;CALL BACKSPACE
 		;CALL SUPRIMIR
 		;CALL COPIA_CAD
-		CALL PEGA_CAD
+		;CALL PEGA_CAD
 		;DESP CADENA_COPIAR
 		;INSERTAR_CAD CARACTER, LONG_CAR
-		CALL MOVC_UP
-		CALL MOVC_UP
-		CALL INSERTAR_C
+		;CALL MOVC_UP
+		;CALL MOVC_UP
+		;CALL HOME_STR
+		;CALL END_STR
+		;CALL MOVC_IZ
+		;CALL MOVC_DER
+		;CALL INSERTAR_C
 		DESP CADENA_DEST
 		;DESP CADENA_COPIAR
 		
