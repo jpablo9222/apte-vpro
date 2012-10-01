@@ -1,5 +1,3 @@
-
-
 ;***********************************************************************************
 ; Macro para obtener la posición del cursor en la pantalla.
 ;***********************************************************************************
@@ -181,7 +179,7 @@ COL_ACTUAL 		DB	?
 NUM_PAG			DB	?
 LONG_LINE		DW	80
 NUM_LINE		DB	?
-STR_TAB			DB 	09H,0H,0H,0H,0H,0H,0H,0H,0H,0H,' $'
+STR_TAB			DB 	0FFH,0H,0H,0H,0H,0H,0H,0H,0H,0FFH,' $'
 LONG_TAB		DW	10
 CONT_TAB		DW	0
 ;STRING_NULL		DB	40 DUP (0H), '$'
@@ -308,7 +306,14 @@ CONT_N:			MOV AX, APUNTADOR_CAD
 				CALL BACKSPACE
 				JMP SALE_SUPR
 SUPRIMIR		ENDP
-		
+
+;----------------------------------------------------------------------------------------------
+; Procedimiento para borrar caracter donde se encuentra posicionado el apuntador, utiliza a 
+; BACKSPACE para su total funcionamiento.
+; Parámetros: 	APUNTADOR_CAD: para conocer el caracter a borrar.
+;				CONT_NULL: contador de caracteres nullos por suprimir en caso de que existieran.
+;				CANT_CAR: contador de caracteres introducidos en el String.
+;----------------------------------------------------------------------------------------------
 ELIM_STR		PROC NEAR
 				PUSHA
 				MOV CX, LONG_LINE
@@ -320,6 +325,15 @@ F_CIC_ELI:		POPA
 				RET
 ELIM_STR		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para guardar una línea de 80 caracteres en un string auxiliar al mismo tiempo que
+; la borra del String y mueve toda la cadena.
+; Parámetros: 	APUNTADOR_CAD: para conocer el inicio de la línea que se cortará.
+;				LONG_LINE: determina la cantidad de caracteres en una línea.
+;				CADENA_COPIAR: String donde se guarda la línea cortada, funciona también para 
+;					guardar algún String que solamente se haya copiado.
+;				LONG_CADP: Largo de la cadena que se ha guardado en CADENA_COPIAR, 80 caracteres.
+;----------------------------------------------------------------------------------------------
 CORTAR_CAD		PROC NEAR
 				PUSHA
 				DIVIDIR APUNTADOR_CAD, LONG_LINE
@@ -333,6 +347,14 @@ SALE_CUT:		POPA
 				RET
 CORTAR_CAD		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para guardar una línea de 80 caracteres en un string auxiliar sin borrarlo.
+; Parámetros: 	APUNTADOR_CAD: para conocer el inicio de la línea que se cortará.
+;				lONG_LINE: determina la cantidad de caracteres en una línea.
+;				CADENA_COPIAR: String donde se guarda la línea cortada, funciona también para 
+;					guardar algún String que solamente se haya copiado.
+;				LONG_CADP: Largo de la cadena que se ha guardado en CADENA_COPIAR, 80 caracteres.
+;----------------------------------------------------------------------------------------------
 COPIA_CAD		PROC NEAR
 				PUSHA
 				DIVIDIR APUNTADOR_CAD, LONG_LINE
@@ -347,6 +369,15 @@ COPIA_CAD		PROC NEAR
 				RET
 COPIA_CAD		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para pegar la cadena guardada en alguno de los procedimientos CORTAR_CAD o 
+; COPIA_CAD. La copia en la dirección determinada por el apuntador de la cadena.
+; Parámetros: 	APUNTADOR_CAD: para conocer el inicio donde se pegará el String.
+;				lONG_LINE: determina la cantidad de caracteres en una línea.
+;				CADENA_COPIAR: String donde se guarda la línea cortada, funciona también para 
+;					guardar algún String que solamente se haya copiado.
+;				LONG_CADP: Largo de la cadena que se ha guardado en CADENA_COPIAR, 80 caracteres.
+;----------------------------------------------------------------------------------------------
 PEGA_CAD		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
@@ -369,17 +400,14 @@ SALE_PEGA:		POPA
 				RET
 PEGA_CAD		ENDP
 
-INICIO_LINE		PROC NEAR
-				PUSHA
-				MOVM APUNTADOR_CAD, COP_APUNT_CAD
-				DIVIDIR COP_APUNT_CAD, LONG_LINE
-				RESTAM COP_APUNT_CAD, RESIDUO
-				MOVM COP_APUNT_CAD, LONG_COP
-				POPA
-				RET
-INICIO_LINE		ENDP
-
-; CONDICIÓN: EL ENTER DEBE COLOCAR UN ' ' DESPUÉS DE TODOS LOS NULL Y TAB ANTES, DEBE SER PAR.
+; CONDICIÓN: EL ENTER DEBE COLOCAR UN ASCII CUALQUIERA AL INICIO DE LA LÍNEA. TAB LO COLOCA ANTES Y
+; DEBE SER PAR.
+;----------------------------------------------------------------------------------------------
+; Procedimiento para desplazarse hacia la izquierda del String. Si está al principio del mismo,
+; no realiza ninguna acción. Si está al principio de una línea, se mueve a la anterior, si es 
+; ENTER, se mueve al principio de la línea, si hay tabuladores, al final de los mismos.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;----------------------------------------------------------------------------------------------
 MOVC_IZ			PROC NEAR
 				PUSHA
 FIND_ASCII:		CMP APUNTADOR_CAD, 0
@@ -392,7 +420,15 @@ SALE_IZ:		POPA
 				RET
 MOVC_IZ			ENDP
 
-; CONDICIÓN: EL ENTER DEBE COLOCAR UN ' ' DESPUÉS DE TODOS LOS NULL Y TAB ANTES, DEBE SER PAR.
+; CONDICIÓN: EL ENTER DEBE COLOCAR UN ASCII CUALQUIERA AL INICIO DE LA LÍNEA. TAB LO COLOCA ANTES Y
+; DEBE SER PAR.
+;----------------------------------------------------------------------------------------------
+; Procedimiento para desplazarse hacia la derecha del String. Si está al final del mismo,
+; no realiza ninguna acción. Si está al final de una línea, se mueve a la siguiente, si es 
+; ENTER, se mueve al principio de la línea, si hay tabuladores, al principio de los mismos.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				CADENA_DEST: String principal del programa.
+;----------------------------------------------------------------------------------------------
 MOVC_DER		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
@@ -413,6 +449,14 @@ REG_APUNT:		MOVM APUNTADOR_CAD, APUNTADOR_CAD
 				JMP SALE_DER
 MOVC_DER		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para obtener el ASCII más cercano distinto de 00H. 
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				COP_APUNT_CAD: copia para auxiliar al apuntador definitivo del String.
+;				CONT_TAB: Cuenta la cantidad de NULLS hacia la izquierda para determinar el
+;					ASCII más cercano al apuntador.
+;				CADENA_DEST: String principal del programa.
+;----------------------------------------------------------------------------------------------
 DISTANCIA_MENOR PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
@@ -434,7 +478,17 @@ C_DER:			DEC COP_APUNT_CAD
 				JMP SALE_MEN
 DISTANCIA_MENOR ENDP
 
-; CONDICIÓN: EL ENTER DEBE COLOCAR UN ' ' DESPUÉS DE TODOS LOS NULL Y TAB ANTES, DEBE SER PAR.
+; CONDICIÓN: EL ENTER DEBE COLOCAR UN ASCII CUALQUIERA AL INICIO DE LA LÍNEA. TAB LO COLOCA ANTES Y
+; DEBE SER PAR.
+;----------------------------------------------------------------------------------------------
+; Procedimiento para desplazarse hacia la linea anterior del String. Si se desplaza hacia un NULL,
+; busca el ASCII más cercano hacia su derecha o izquierda. Si está en la primera línea, no realiza 
+; acción alguna. 
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				COP_APUNT_CAD: copia para auxiliar al apuntador definitivo del String.
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;				CADENA_DEST: String principal del programa.
+;----------------------------------------------------------------------------------------------
 MOVC_UP			PROC NEAR
 				PUSHA
 				MOV AX, LONG_LINE
@@ -451,7 +505,20 @@ BUSC_ASCII:		CALL DISTANCIA_MENOR
 				JMP SALE_UP
 MOVC_UP			ENDP
 
-; CONDICIÓN: EL ENTER DEBE COLOCAR UN ' ' DESPUÉS DE TODOS LOS NULL Y TAB ANTES, DEBE SER PAR.
+; CONDICIÓN: EL ENTER DEBE COLOCAR UN ASCII CUALQUIERA AL INICIO DE LA LÍNEA. TAB LO COLOCA ANTES Y
+; DEBE SER PAR.
+;----------------------------------------------------------------------------------------------
+; Procedimiento para desplazarse hacia la siguiente línea del String. Si se desplaza hacia un NULL,
+; busca el ASCII más cercano hacia su derecha o izquierda. Si está en la última línea, no realiza 
+; acción alguna. Si se dirige a una posición mayor a los caracteres ingresados, regresa al último
+; caracter del String.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				COP_APUNT_CAD: copia para auxiliar al apuntador definitivo del String.
+;				LONG_STRING1: Capacidad total del String. 
+;				CANT_CAR: Cantidad de caracteres ingresados por el usuario hasta el momento.
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;				CADENA_DEST: String principal del programa.
+;----------------------------------------------------------------------------------------------
 MOVC_DOWN		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
@@ -475,6 +542,17 @@ ULTIMO:			MOVM CANT_CAR, APUNTADOR_CAD
 				JMP SALE_DOWN
 MOVC_DOWN		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para insertar 10 espacios en el String, simulando un tabulador. El primer y último
+; espacio es distinto a NULL para poder ubicarlo en el String. Si al insertarlo es mayor a la 
+; longitud del String, no se inserta.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				COP_APUNT_CAD: copia para auxiliar al apuntador definitivo del String.
+;				LONG_STRING1: Capacidad total del String. 
+;				CANT_CAR: Cantidad de caracteres ingresados por el usuario hasta el momento.
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;				CADENA_DEST: String principal del programa.
+;----------------------------------------------------------------------------------------------
 TABULADOR		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
