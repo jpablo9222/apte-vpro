@@ -166,8 +166,8 @@ INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 CARACTER_NULL	DB	00H
 CARACTER		DB	 '*$'
 LONG_CAR		DW, 1
-CADENA_DEST		DB	16 DUP (?),'$'
-LONG_STRING1	DW	16
+CADENA_DEST		DB	16 DUP (?),0H,0H,0H,0H,0H,0H,0H,0H,0H,0H,'$'
+LONG_STRING1	DW	26
 CANT_CAR		DW	16
 APUNTADOR_CAD	DW 	0
 COP_APUNT_CAD	DW	?
@@ -218,17 +218,16 @@ COP_BS			PROC NEAR
 				PUSHA
 				LIMPIAR CADENA_AUX, LONG_AUX					
 				MOV AX, CONT_NULL								
-				SUB APUNTADOR_CAD, AX								; Se coloca el apuntador en la posición adecuada.
-				RESTAM CANT_CAR, COP_APUNT_CAD						; Se obtiene la longitud de cadena a copiar.
+				RESTAM CANT_CAR, APUNTADOR_CAD						; Se obtiene la longitud de cadena a copiar.
 				MOV BX, APUNTADOR_CAD
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP 	;Se copia a la cadena auxiliar
-				DEC BX
-				MOV APUNTADOR_CAD, BX								; Se mueve el apuntador a la nueva posición.
+				DEC APUNTADOR_CAD
+				MOV BX, APUNTADOR_CAD								; Se mueve el apuntador a la nueva posición.
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP 	;Se copia la cadena auxiliar en la nueva posición.
-				LIMPIAR CADENA_AUX, LONG_AUX									
+				LIMPIAR CADENA_AUX, LONG_AUX
+				DEC CANT_CAR				
 				MOV BX, CANT_CAR
 				COPIAR_CAD CARACTER_NULL, CADENA_DEST[BX], 1		; Se inserta un NULL en la última posición de la cadena anterior.
-				DEC CANT_CAR
 				POPA
 				RET
 COP_BS			ENDP
@@ -251,18 +250,19 @@ NULL_AG:		DEC COP_APUNT_CAD
 				INC CONT_NULL
 				DEC CANT_CAR
 				JMP NULL_AG
-SAL_NULL:		MOV CX, CONT_NULL								
-				SUMAM CANT_CAR, CONT_NULL
+SAL_NULL:		SUMAM CANT_CAR, CONT_NULL
 				RESTAM SUMA, APUNTADOR_CAD							; Se obtiene la longitud de cadena a copiar.
 				CMP LONG_COP, 0
 				JE COP_1
 CONTI:			MOV BX, APUNTADOR_CAD								
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP	; Se copia la cadena auxiliar en la nueva posición.
-				DEC COP_APUNT_CAD
 				MOV BX, COP_APUNT_CAD
 				INC BX
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
+				MOV BX, APUNTADOR_CAD
 				IMP_NULLS CADENA_DEST, CANT_CAR, CONT_NULL			; Se imprimen los NULL necesarios para eliminar los caracteres.
+				RESTAM APUNTADOR_CAD, CONT_NULL
+				MOVM LONG_COP, APUNTADOR_CAD
 				POPA
 				RET
 COP_1:			INC LONG_COP
@@ -278,22 +278,22 @@ COP_BSNULL		ENDP
 ;----------------------------------------------------------------------------------------------
 BACKSPACE		PROC NEAR
 				PUSHA
-				MOVM APUNTADOR_CAD, COP_APUNT_CAD
+SALE_BS:		MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				CMP APUNTADOR_CAD, 0								; Se comprueba que no esté en la primera columna y fila
 				JE  SALE_BS											; del áreaescritura, si lo está, no ejecuta la acción.
-IN_BS:			DEC COP_APUNT_CAD									; Se hace una copia del apuntador para guardar el mismo.
+				DEC COP_APUNT_CAD									; Se hace una copia del apuntador para guardar el mismo.
 				MOV BX, COP_APUNT_CAD							
 				MOV AL, CADENA_DEST[BX]								; Se obtiene el caracter anterior al apuntador, si es NULL
 				CMP AL, 00H											; se ejecutan instrucciones para eliminar todos los NULL,
 				JE	ELIM_NULL										; de lo contario, se elimina solamente un caracter del String.
 				CALL COP_BS
-SALE_BS:		POPA
+				POPA
 				RET
 ELIM_NULL:		MOV CONT_NULL, 0									; Se inicializa CONT_NULL
 				INC CONT_NULL										
 				DEC CANT_CAR
-				CALL COP_BSNULL										
-				JMP IN_BS
+				CALL COP_BSNULL	
+				JMP SALE_BS
 BACKSPACE		ENDP
 
 ;----------------------------------------------------------------------------------------------
@@ -313,14 +313,11 @@ SUPRIMIR		PROC NEAR
 				MOV AL, CADENA_DEST[BX]								; Se compara el caracter de la posición en búsqueda 
 				CMP AL, 00H											; de algún NULL, si los hay, se accede a su correcto
 				JE SUPR_NULL										; procesamiento.
-				CMP AL, 09H											; 01H funciona como caracter indicador de finalizado.
-				JE SUPR_NULL
 				INC COP_APUNT_CAD
 				CALL BACKSPACE
 SALE_SUPR:		POPA
 				RET
-SUPR_NULL:		MOV CONT_NULL, 0									; Se inicializa CONT_NULL
-				MOV CADENA_DEST[BX], 01H							; Se sustituye el primer caracter por uno cualquiera.
+SUPR_NULL:		MOV CADENA_DEST[BX], 01H								; Se sustituye el primer caracter por uno cualquiera.
 CONT_N:			MOV AX, APUNTADOR_CAD
 				CMP AX, CANT_CAR									; Se corrobora que no haya alcanzado el final del String.
 				JE SALE_SUPR
@@ -696,19 +693,21 @@ NEGRITAS		ENDP
 ;--------------------------------------------------------------------------------------------
 
 REND_CAD		PROC  NEAR
+				PUSHA
 				LEA   SI, CADENA_DEST
 RECORRER:		LODSB
-				INC APUNTADOR_CAD
 				CMP	  AL, 00H
 				JE    SUP
 CONTINUAR:		MOV   BX, CANT_CAR
-				DEC	  BX
-				LEA   DX, STRING[BX]
-				CMP   DX, SI
-				JAE	  RECORRER
+				LEA   DX, STRING[BX-1]
+				INC APUNTADOR_CAD
+				;CMP   DX, SI
+				;JAE	  RECORRER
+				CMP APUNTADOR_CAD, BX
+				JNE RECORRER
+				POPA
 				RET
-SUP:			DEC   APUNTADOR_CAD
-				CALL  SUPRIMIR
+SUP:			CALL  SUPRIMIR
 				JMP   CONTINUAR
 REND_CAD		ENDP
 
@@ -741,13 +740,15 @@ MAIN PROC FAR
 		;DESP CADENA_COPIAR
 		;INSERTAR_CAD CARACTER, LONG_CAR
 		;DESP CADENA_PRUEBA
-		;MOV APUNTADOR_CAD, 00
+		COPIAR_CAD CADENA_PRUEBA, CADENA_DEST, 16
+		MOV APUNTADOR_CAD, 6
 		;CALL INSERTAR_C
 		;CALL INSERTAR_C
 		;CALL INSERTAR_C
 		;CALL INSERTAR_C
 		;CALL INSERTAR_C
-		;CALL TABULADOR
+		CALL TABULADOR
+		MOV APUNTADOR_CAD, 0
 		;SET_CUR 00, 00, 00
 		;CALL NEGRITAS
 		;SET_CUR 00, 00, 24
@@ -767,7 +768,6 @@ MAIN PROC FAR
 		;DESP CADENA_DEST
 		;DESP CADENA_COPIAR
 		;MOVM CANT_CARP, CANT_CAR
-		COPIAR_CAD CADENA_PRUEBA, CADENA_DEST, 16
 		CALL REND_CAD
 		DESP CADENA_DEST
 		
