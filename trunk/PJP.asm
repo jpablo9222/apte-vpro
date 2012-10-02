@@ -176,6 +176,20 @@ STR0			DB	?
 FILA_ACTUAL		DB	?
 COL_ACTUAL		DB	?
 
+TABLA      		DW  ARCHIVO              	             ; Tabla de bifurcación con sus cuatro opciones
+				DW  EDICION
+				DW  FORMATO
+				DW  AYUDA
+				DW  HOME
+				DW  ENDD
+				DW  INSERT
+				DW  PG_UP
+				DW  PG_DOWN
+				DW  
+				DW
+				DW
+				DW
+CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24
 
 ;-------------------------------------------------------------------------------------------
 ; Inicio de código
@@ -189,33 +203,26 @@ COL_ACTUAL		DB	?
 ; fLUJO LÓGICO DEL PROGRAMA
 ;-------------------------------------------------------------------------------------------
 FLUJO			PROC  NEAR
-				
-				GET_ET
+VUELVE:	   		CLEAN_BUFF				
+AGAIN:      	GET_ET
 				CMP   ASCII, 0
 				JE    FUN_ES
 				INSERT_C ASCII 
-				CMP   ASCII, 13
-				JNE   TABB
-				INC   FILA_ACTUAL
-				MOV   COL_ACTUAL, 0
-				SET_CUR PAG_ACTUAL, COL_ACTUAL, FILA_ACTUAL
-TABB:			CMP   ASCII, 09
-				JNE	  BCKS
-				CMP   COL_ACTUAL, 68
-				JA    FIN_L
-				INC   COL_ACTUAL, 11
-BCKS:			CMP   ASCII, 08
-
-				CMP   COL_ACTUAL, 79
-				JNE   MISMA_L
-				INC   FILA_ACTUAL
-				SET_CUR PAG_ACTUAL, 0, FILA_ACTUAL
-
-MISMA_L:		INC   COL_ACTUAL
-
-FIN_L:			MOV   COL_ACTUAL, 79
-
-FUN_ES:
+				REND_CAD
+				JMP   VUELVE
+FUN_ES:			CLD						; izq a der
+				MOV	  AL, RASTREO		; busca ‘a’ en TEXTO
+				MOV	  CX, 13
+				LEA	  DI, CAD_TABLA
+COMP:			SCASB			; repite mientras no 
+				JE    SALTA
+				INC   DI
+				LOOP  COMP
+				JMP   VUELVE
+SALTA:     		XOR	  BX, BX
+				MOV   BL, [DI]   	; obtener el codigo
+				CALL  [TABLA+BX] 	; salta a la tabla
+				JMP   VUELVE
 FLUJO			ENDP
 
 ;--------------------------------------------------------------------------------------------
@@ -228,16 +235,21 @@ REND_CAD		PROC  NEAR
 RECORRER:		LODSB	
 				CMP	  AL, 00H
 				JE    SUP
-CONTINUAR:		MOV   BX, CANT_CAR
-				DEC	  BX
-				CMP   BX, SI
+CONTINUAR:		CALL  CMP_CANT_CAR
 				JAE	  RECORRER
 				RET
 SUP:			MOV	  APUNT, SI
-				SUB   APUNT
+				SUB   APUNT, 1
 				CALL  SUPRIMIR
 				JMP   CONTINUAR
 REND_CAD		ENDP
+
+CMP_CANT_CAR	PROC  NEAR
+				MOV   BX, CANT_CAR
+				LEA   DX, STRING[BX-1]
+				CMP	  SI, DX
+				RET
+CMP_CANT_CAR	ENDP
 
 ;--------------------------------------------------------------------------------------------
 ; Necesita pasar a STRING, la cadena a renderizar, y en CANT_CAR, cantidad de caracteres de
@@ -246,9 +258,7 @@ REND_CAD		ENDP
 
 SET_STR			PROC  NEAR
 				LEA   SI, STRING
-				MOVM  CANT_CAR, COP_CANT_CAR
-				SUB	  COP_CANT_CAR,1
-RECORRER1:		CMP	  SI, COP_CANT_CAR
+RECORRER1:		CALL  CMP_CANT_CAR
 				JE    FIN
 				MOV	  AL, [SI]
 				MOV   CHAR, AL
