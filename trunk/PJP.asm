@@ -160,7 +160,7 @@ SET_SP			MACRO TROW, BROW, LCOL, LM
 ; Area de datos
 .DATA
 .386
-B_MENUS			DB '  Archivo  Edición  Formato  Ayuda  ', 36 DUP (' '), '$'
+
 INICIO_CAD		DW	?			
 CARACTER		DB	?
 CADENA_DEST		DB	'Hoy es un bonito dia...    ', '$'
@@ -184,6 +184,8 @@ STR0			DB	?
 FILA_ACTUAL		DB	?
 COL_ACTUAL		DB	?
 
+<<<<<<< .mine
+B_MENUS			DB '  Archivo    Edición    Formato    Ayuda  ', 38 DUP (' '), '$'
 M_ARCHIVO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
 				DB	0BAH, ' Abrir    ', 0BAH
 				DB	0BAH, ' Guardar  ', 0BAH
@@ -207,6 +209,31 @@ M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH	; Dibuja menu
 				DB	0BAH, ' Creditos         ', 0BAH
 				DB	0C8H, 18 DUP(0CDH), 0BCH	
 
+=======
+M_ARCHIVO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
+				DB	0BAH, ' Abrir    ', 0BAH
+				DB	0BAH, ' Guardar  ', 0BAH
+				DB	0BAH, ' Salir    ', 0BAH
+				DB	0C8H, 10 DUP(0CDH), 0BCH
+				
+M_EDICION		DB	0C9H, 22 DUP(0CDH), 0BBH	; Dibuja menu
+				DB	0BAH, ' Cortar   			 ', 0BAH
+				DB	0BAH, ' Copiar     			 ', 0BAH
+				DB	0BAH, ' Pegar                ', 0BAH
+				DB	0BAH, ' Copiar y Reemplazar  ', 0BAH
+				DB	0C8H, 22 DUP(0CDH), 0BCH
+
+M_ARCHIVO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
+				DB	0BAH, ' Negrita  ', 0BAH
+				DB	0BAH, ' Normal   ', 0BAH
+				DB	0C8H, 10 DUP(0CDH), 0BCH
+				
+M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH	; Dibuja menu
+				DB	0BAH, ' Manual de Ayuda  ', 0BAH
+				DB	0BAH, ' Creditos         ', 0BAH
+				DB	0C8H, 18 DUP(0CDH), 0BCH	
+
+>>>>>>> .r88
 TABLA      		DW  ARCHIVO              	             ; Tabla de bifurcación con sus cuatro opciones
 				DW  EDICION
 				DW  FORMATO
@@ -231,6 +258,93 @@ CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 
 ;-------------------------------------------------------------------------------------------
 
 ;-------------------------------------------------------------------------------------------
+<<<<<<< .mine
+; Imprime el menu de acuerdo a aja
+;-------------------------------------------------------------------------------------------
+B10MENU			PROC  NEAR
+				PUSHA						; guardar todos los registros
+				MOV	  DH, TOPROW+1			; fila superior de sombra
+				LEA	  BP, SHADOW				; caracteres sombreados
+B20:			MOV	  AX, 1301H				; dibujar caja sombreada
+				MOV   BH, PAGINA			; PAGINA
+				MOV	  BL, 60H				; atributo
+				
+				MOV	  CX, LONG_MEN					; 19 caracteres
+				MOV	  DL, LEFCOL+1			; columna izq de sombra
+				INT	  10H
+				INC	  DH						; siguiente fila
+				CMP	  DH, BOTROW+2			; se desplegaron todas las columnas?
+				JNE	  B20						; no, repetir
+
+				LEA	  BP, MENU				; linea del menu
+				MOV	  DH, TOPROW				; fila
+B30:
+				MOV	  BX, PAGINA			;PAGINA
+				MOV   BL, 71H				; atributo: azul sobre blanco
+				MOV	  AX, 1300H				; solicitar menu de despliegue
+				MOV	  CX, 19					; longitud de la linea
+				MOV	  DL, LEFCOL					; columna
+				PUSH  DX					; guarda el registro que contiene fila, columna
+				INT   10H
+				ADD	  BP, 19					; siguiente linea del menu
+				POP	  DX						; recupera registro con fila, columna
+				INC	  DH						; siguiente fila
+				CMP	  DH, BOTROW+1			; se mostraron todas las filas?
+				JNE	  B30						; no, repetir
+
+				MOV   AX, 1301H			; desplegar prompt
+				MOV	  BX, 0071H				; pagina y atributo
+				LEA	  BP, PROMPT				; linea de prompt
+				MOV	  CX, 133					; longitud de linea
+				MOV	  DH, BOTROW+4			; fila y
+				MOV	  DL, 00					; columna de pantalla
+				INT	  10H
+				POPA						; recuperar registros
+				RET
+B10MENU	ENDP
+
+;------------------------------------------------------------------------------------------
+ARCHIVO			PROC  NEAR
+				SET_SP 1, 5, 0, 12
+				
+ARCHIVO			ENDP
+
+EDICION			PROC  NEAR
+				SET_SP 1, 6, 12, 24
+				
+EDICION 		ENDP
+
+FORMATO			PROC  NEAR
+				SET_SP 1, 4, 23, 12
+				
+FORMATO			ENDP
+
+AYUDA			PROC  NEAR
+				SET_SP 1, 4, 34, 18
+
+AYUDA			ENDP
+
+
+;-------------------------------------------------------------------------------------------
+; Menus
+;-------------------------------------------------------------------------------------------
+MOSTRAR_MENU	PROC  NEAR
+				CALL  Q10CLEAR                ; Se limpia la pantalla.
+				CALL  B10MENU					; Desplegar menu
+				MOV   ROW, TOPROW+1			; Fijar la fila en la primera opcion
+				MOV   ATTRIB, 17H				; fijar video inverso
+				CALL  D10DISPLY				; resaltar linea actual
+				CALL  C10INPUT				; leer opcion de menu
+				CMP	  INGRESO, 1BH			;  presiono esc?
+				JNE	  A20						; no, continuar
+FIN:		    MOV	  AX, 0600H					; si, terminar
+				CALL  Q10CLEAR				; limpiar pantalla
+				RET
+MOSTRAR_MENU	ENDP
+
+
+;-------------------------------------------------------------------------------------------
+=======
 ; Imprime el menu de acuerdo a aja
 ;-------------------------------------------------------------------------------------------
 B10MENU			PROC  NEAR
@@ -310,6 +424,7 @@ MOSTRAR_MENU	ENDP
 
 
 ;-------------------------------------------------------------------------------------------
+>>>>>>> .r88
 ; fLUJO LÓGICO DEL PROGRAMA
 ;-------------------------------------------------------------------------------------------
 FLUJO			PROC  NEAR
