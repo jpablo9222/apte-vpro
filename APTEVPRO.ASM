@@ -251,11 +251,14 @@ APUNT			DB 	0
 PAGINA			DB  0
 NULL_A_IMP		DW	0
 OFFSET_CUR		DW  0
+;GET_ET
 ASCII			DB  0
 RASTREO			DB 	0
-CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24
+;CURSOR
 CT				DB 	0
 FT				DB	0
+;TABLA DE BIFUCACIÓN
+CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24
 TABLA      		DW  ARCHIVO              	             ; Tabla de bifurcación con sus cuatro opciones
 				DW  EDICION
 				DW  FORMATO
