@@ -172,28 +172,28 @@ DESPC			MACRO CARACTER
 				INT 21H
 				ENDM
 
-INSERTAR_C 	MACRO CARACTER
-			LOCAL INS_C
-			LOCAL IMP_SIG
-			PUSHA
-			LIMPIAR CADENA_AUX, LONG_AUX
-			MOV DX, CANT_CAR
-			CMP APUNTADOR_CAD, DX
-			JE IMP_SIG
-			RESTAM CANT_CAR, APUNTADOR_CAD
-			MOV BX, APUNTADOR_CAD
-			COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
-			COPIAR_CAD CARACTER, CADENA_DEST[BX], 1
-			COPIAR_CAD CADENA_AUX, CADENA_DEST[BX+1], LONG_COP
-			LIMPIAR CADENA_AUX, LONG_AUX
-			INC CANT_CAR
-			JMP INS_C
-IMP_SIG:	INC CANT_CAR
-			MOV BX, APUNTADOR_CAD
-			COPIAR_CAD ASCII, CADENA_DEST[BX], 1
-			JMP INS_C
-INS_C:		POPA			
-			ENDM
+INSERTAR_C 		MACRO CARACTER
+				LOCAL INS_C
+				LOCAL IMP_SIG
+				PUSHA
+				LIMPIAR CADENA_AUX, LONG_AUX
+				MOV DX, CANT_CAR
+				CMP APUNTADOR_CAD, DX
+				JE IMP_SIG
+				RESTAM CANT_CAR, APUNTADOR_CAD
+				MOV BX, APUNTADOR_CAD
+				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
+				COPIAR_CAD CARACTER, CADENA_DEST[BX], 1
+				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX+1], LONG_COP
+				LIMPIAR CADENA_AUX, LONG_AUX
+				INC CANT_CAR
+				JMP INS_C
+IMP_SIG:		INC CANT_CAR
+				MOV BX, APUNTADOR_CAD
+				COPIAR_CAD ASCII, CADENA_DEST[BX], 1
+				JMP INS_C
+INS_C:			POPA			
+				ENDM
 			
 PASAR_DW_DB	MACRO P_W
 			XOR AX, AX
@@ -201,6 +201,14 @@ PASAR_DW_DB	MACRO P_W
 			MOV AH, 0
 			ENDM
 			
+SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
+				MOV   TOPROW, TROW
+				MOV   BOTROW, BROW
+				MOV   LEFCOL, LCOL
+				MOV   LONG_MEN, LM
+				LEA   DX, MEN
+				MOV   MENU, DX
+				ENDM
 			
 			
 	.MODEL SMALL
@@ -266,7 +274,6 @@ TABLA      		DW  ARCHIVO              	             ; Tabla de bifurcación con s
 ;STRING_NULL		DB	40 DUP (0H), '$'
 
 ;PARTE GRÁFICA LOL
-PAGINA			DB  0
 TOPROW			DB	?					    	; Fila superior menu
 BOTROW			DB	?							; fila inferior menu
 LEFCOL			DB	?							; Columna izquierda menu
@@ -398,9 +405,9 @@ A20:			CALL  Q10CLEAR                	; Se limpia la pantalla.
 				MOV   ATTRIB, 10H				; fijar video inverso
 				CALL  D10DISPLY				; resaltar linea actual
 				CALL  C10INPUT					; leer opcion de menu
-				;CMP	  INGRESO, 1BH			;  presiono esc?
-				;JNE	  A20					; no, continuar
-FIN:			;CALL  Q10CLEAR					; limpiar pantalla
+				CMP	  INGRESO, 1BH			;  presiono esc?
+				JNE	  A20					; no, continuar
+FIN:			CALL  Q10CLEAR					; limpiar pantalla
 				RET
 MOSTRAR_MENU	ENDP
 
@@ -496,6 +503,38 @@ D10DISPLY 		PROC  NEAR
 				POPA							; recuperar registros
 				RET
 D10DISPLY 		ENDP
+
+; ----------------------------------------------------------------------
+; hola mundo.
+; ----------------------------------------------------------------------
+Q10CLEAR 		PROC  NEAR
+				PUSHA							; guardar registros
+				MOV	  AX, 0600H
+				MOV	  BH, 17H					; blanco sobre verde
+				MOV	  CX, 0200H				; pantalla completa
+				MOV	  DX, 164FH				; fila 24, col 79
+				INT	  10H
+				
+				MOV   AX, 1300H
+				MOV   BH, PAGINA
+				MOV   BL, 70H
+				LEA   BP, B_MENUS
+				MOV   DX, 0000H
+				MOV   CX, 0080
+				INT   10H
+				
+				INC   DH 
+				MOV   BL, 07H
+				LEA   BP, B_NA
+				INT   10H
+				
+				MOV   DX, 1700H
+				MOV   BL, 70H
+				LEA   BP, B_ABAJO
+				INT   10H
+				POPA							; recuperar registros
+				RET
+Q10CLEAR 		ENDP
 
 ;----------------------------------------------------------------------------------------------
 ; Procedimiento auxiliar para borrar el caracter anterior a la posición del apuntador:
@@ -1001,7 +1040,7 @@ CONTINUAR:		MOV   BX, CANT_CAR
 				;CMP APUNTADOR_CAD, BX
 				;JNE RECORRER
 				MOV APUNTADOR_CAD, 0
-				SET_CUR PAGINA, 0, 0
+				SET_CUR PAGINA, 0, 2
 				POPA
 				RET
 SUP:			CALL  SUPRIMIR
@@ -1071,7 +1110,7 @@ SET_STR			PROC  NEAR
 RECORRER1:		MOV   BX, CANT_CAR
 				LEA   DX, CADENA_DEST[BX]
 				CMP	  SI, DX
-				JE    FIN
+				JE    FIN2
 				MOV	  AL, [SI]
 				MOV   CHAR, AL
 				;CALL  APUNT_CUR
@@ -1092,7 +1131,7 @@ VERIFICAR:		CALL  BAJAR_P
 				JMP   RECORRER1
 TAB:			CALL  HAY_TAB
 				JMP   RECORRER1
-FIN:		    RET
+FIN2:		    RET
 SET_STR			ENDP
 
 ;----------------------------------------------------------------------------------------------
@@ -1200,29 +1239,11 @@ SALTA:     		XOR	  BX, BX
 				JMP   IMP_P
 FLUJO			ENDP
 
-
-FORMATO   		PROC NEAR
-				RET
-FORMATO			ENDP
-
-ARCHIVO			PROC NEAR
-				RET
-ARCHIVO			ENDP
-
-EDICION			PROC NEAR
-				RET
-EDICION			ENDP
-
-AYUDA			PROC NEAR
-				RET
-AYUDA			ENDP
-
-
-
-
 MAIN PROC FAR
 
 		INICIO
+		CALL  Q10CLEAR
+		SET_CUR PAGINA, 0, 2
 		;DESP CADENA_DEST
 		;CALL INSERTAR_C
 		;INSERTAR_CAD S_2_INS, LONG_STRING2
