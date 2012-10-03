@@ -193,10 +193,13 @@ LEFCOL			DB	?							; Columna izquierda menu
 ATTRIB			DB	?							; Atributo de pantalla
 ROW				DB	?							; Fila pantalla
 INGRESO			DB	?							; Guarda tecla ingresada
-SHADOW			DB	24	DUP(0DBH)				; Caracteres de sombreado
+SHADOW			DB	26	DUP(0DBH)				; Caracteres de sombreado
 MENU			DW  ?
 LONG_MEN		DB  ?
-B_MENUS			DB '  Archivo    Edición    Formato    Ayuda  ', 38 DUP (' '), '$'
+NOMBRE			DB '        .TXT', 00H
+B_NA			DB 36 DUP (0C4H), 'UNTITLED', 36 DUP (0C4H), '$'
+B_MENUS			DB '  Archivo    Edicion    Formato    Ayuda  ', 38 DUP (' '), '$'
+B_ABAJO			DB ' F1 - Archivo    F2 - Edicion    F3 - Formato    F4 - Ayuda ', 20 DUP (' '), '$'  
 M_ARCHIVO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
 				DB	0BAH, ' Abrir    ', 0BAH
 				DB	0BAH, ' Guardar  ', 0BAH
@@ -204,8 +207,8 @@ M_ARCHIVO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
 				DB	0C8H, 10 DUP(0CDH), 0BCH
 				
 M_EDICION		DB	0C9H, 22 DUP(0CDH), 0BBH	; Dibuja menu
-				DB	0BAH, ' Cortar   			 ', 0BAH
-				DB	0BAH, ' Copiar     			 ', 0BAH
+				DB	0BAH, ' Cortar               ', 0BAH
+				DB	0BAH, ' Copiar               ', 0BAH
 				DB	0BAH, ' Pegar                ', 0BAH
 				DB	0BAH, ' Copiar y Reemplazar  ', 0BAH
 				DB	0C8H, 22 DUP(0CDH), 0BCH
@@ -281,7 +284,7 @@ PAINT_CUADRO	PROC  NEAR
 				MOV	  DH, TOPROW				; fila
 B30:
 				MOV	  BH, PAGINA			;PAGINA
-				MOV   BL, 71H				; atributo: azul sobre blanco
+				MOV   BL, 70H				; atributo: azul sobre blanco
 				MOV	  AX, 1300H				; solicitar menu de despliegue
 				MOVZX	  CX, LONG_MEN					; longitud de la linea
 				MOV	  DL, LEFCOL					; columna
@@ -328,18 +331,17 @@ AYUDA			ENDP
 ; Menus
 ;-------------------------------------------------------------------------------------------
 MOSTRAR_MENU	PROC  NEAR
-A20:			CALL  Q10CLEAR                ; Se limpia la pantalla.
-				CALL  PAINT_MENU					; Desplegar menu
+A20:			CALL  Q10CLEAR                	; Se limpia la pantalla.
+				CALL  PAINT_MENU				; Desplegar menu
 				MOV   AL, TOPROW
 				INC   AL
-				MOV   ROW, AL			; Fijar la fila en la primera opcion
-				MOV   ATTRIB, 17H				; fijar video inverso
+				MOV   ROW, AL					; Fijar la fila en la primera opcion
+				MOV   ATTRIB, 10H				; fijar video inverso
 				CALL  D10DISPLY				; resaltar linea actual
-				;CALL  C10INPUT				; leer opcion de menu
+				CALL  C10INPUT					; leer opcion de menu
 				;CMP	  INGRESO, 1BH			;  presiono esc?
-				;JNE	  A20						; no, continuar
-FIN:		    ;MOV	  AX, 0600H					; si, terminar
-				;CALL  Q10CLEAR				; limpiar pantalla
+				;JNE	  A20					; no, continuar
+FIN:			;CALL  Q10CLEAR					; limpiar pantalla
 				RET
 MOSTRAR_MENU	ENDP
 
@@ -358,7 +360,7 @@ C20:			MOV	  AH, 10H					; leer caracter de teclado
 				JE	  C90
 				JMP	  C20
 C30:			MOV	  INGRESO, AL
-				MOV	  ATTRIB, 71H				; flecha-abajo, azul sobre blanco
+				MOV	  ATTRIB, 70H				; flecha-abajo, azul sobre blanco
 				CALL  D10DISPLY			; regresar linea ant a video normal
 				INC	  ROW						; fila siguiente
 				MOV   AL, BOTROW
@@ -370,7 +372,7 @@ C30:			MOV	  INGRESO, AL
 				MOV	  ROW, AL		; si, iniciar fila
 				JMP	  C50
 C40:			MOV	  INGRESO, AL
-				MOV   ATTRIB, 71H			; flecha-arriba, azul sobre blanco
+				MOV   ATTRIB, 70H			; flecha-arriba, azul sobre blanco
 				CALL  D10DISPLY			; regresar linea ant a video normal
 				DEC	  ROW					; fila anterior
 				MOV   AL, TOPROW
@@ -380,12 +382,11 @@ C40:			MOV	  INGRESO, AL
 				MOV   AL, BOTROW
 				DEC   AL
 				MOV	  ROW, AL		; si, iniciar fila
-
 C50:			MOV	  INGRESO, AL
-				MOV	  ATTRIB, 17H			; blanco sobre azul
+				MOV	  ATTRIB, 10H			; blanco sobre azul
 				CALL  D10DISPLY			; fijar linea nueva a video inverso
 				JMP	  C20
-C100:  			MOV   ATTRIB, 75H
+C100:  			MOV   ATTRIB, 17H
 				CALL  D10DISPLY
 				;CALL  OUT_M
 C90:
@@ -418,17 +419,20 @@ D10DISPLY 		PROC  NEAR
 				SUB	  AL, TOPROW
 				MOVZX BX, LONG_MEN
 				IMUL  AX, BX				; multiplicar por longitud de linea
-				LEA	  SI, M_FORMATO+1					; para seleccionar fila del menu
+				MOV	  SI, MENU					; para seleccionar fila del menu
 				ADD	  SI, AX
-
+				XOR   AX, AX
+				MOV   AL, LONG_MEN
+				SUB   AL, 2
+				MOV	  CX, AX						; longitud de cadena menu
 				MOV	  AX, 1300H					; solicita despliegue
 				MOVZX BX, ATTRIB				; pagina y atributo
 				MOV	  BP, SI						; caracter de cadena menu
-				MOV	  CX, 17						; longitud de cadena menu
+				INC   BP
 				MOV	  DH, ROW						; fila
 				MOV   AL, LEFCOL
 				INC   AL 
-				MOV	  DL, LEFCOL				; columna
+				MOV	  DL, AL				; columna
 				INT	  10H
 				POPA							; recuperar registros
 				RET
@@ -442,16 +446,38 @@ Q10CLEAR 		PROC  NEAR
 				MOV	  AX, 0600H
 				MOV	  BH, 17H					; blanco sobre verde
 				MOV	  CX, 0200H				; pantalla completa
-				MOV	  DX, 174FH				; fila 24, col 79
+				MOV	  DX, 164FH				; fila 24, col 79
 				INT	  10H
+				
+				MOV   AX, 1300H
+				MOV   BH, PAGINA
+				MOV   BL, 70H
+				LEA   BP, B_MENUS
+				MOV   DX, 0000H
+				MOV   CX, 0080
+				INT   10H
+				
+				INC   DH 
+				MOV   BL, 07H
+				LEA   BP, B_NA
+				INT   10H
+				
+				MOV   DX, 1700H
+				MOV   BL, 70H
+				LEA   BP, B_ABAJO
+				INT   10H
 				POPA							; recuperar registros
 				RET
 Q10CLEAR 		ENDP
 
+INICIO_P		PROC  NEAR
+				
+INICIO_P   		ENDP
 
 MAIN			PROC  FAR
 				INICIO
-				CALL  FORMATO
+				CALL  EDICION
+				;CALL  AYUDA
 				MOV   AX, 4C00H		;salida al DOS
 				INT   21H
 MAIN			ENDP 
