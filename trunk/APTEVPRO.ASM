@@ -1,142 +1,142 @@
 ;***********************************************************************************
 ; Macro para obtener la posición del cursor en la pantalla.
 ;***********************************************************************************
-GET_CUR    	MACRO  PAG
-			MOV    AH, 03H			;Obtiene la posición actual del cursor
-			MOV    BH, PAG
-			INT    10H
-			MOV    FILA_ACTUAL, DH
-			MOV    COL_ACTUAL, DL
-			ENDM
+GET_CUR    		MACRO  PAG
+				MOV    AH, 03H			;Obtiene la posición actual del cursor
+				MOV    BH, PAG
+				INT    10H
+				MOV    FILA_ACTUAL, DH
+				MOV    COL_ACTUAL, DL
+				ENDM
 
 ;----------------------------------------------------------------------------------------------
 ; Macro para posicionar el cursor en una posición específica en la pantalla.
 ;----------------------------------------------------------------------------------------------		   
-SET_CUR    	MACRO  PAG, COL, FILA
-			MOV    AH, 02H
-			MOV    BH, PAG
-			MOV    DL, COL
-			MOV    DH, FILA
-			INT    10H
-			ENDM
+SET_CUR    		MACRO  PAG, COL, FILA
+				MOV    AH, 02H
+				MOV    BH, PAG
+				MOV    DL, COL
+				MOV    DH, FILA
+				INT    10H
+				ENDM
 ;***********************************************************************************
 ; Macro para copiar una cadena a otra. 
 ;***********************************************************************************
-COPIAR_CAD 	MACRO SOURCE, DESTINY, LONGITUD
-			PUSHA
-			MOV CX, LONGITUD	; Se carga la longitud de la cadena
-			CLD
-			LEA SI, SOURCE	
-			LEA DI, DESTINY
-			REP	MOVSB
-			POPA
-			ENDM
+COPIAR_CAD 		MACRO SOURCE, DESTINY, LONGITUD
+				PUSHA
+				MOV CX, LONGITUD	; Se carga la longitud de la cadena
+				CLD
+				LEA SI, SOURCE	
+				LEA DI, DESTINY
+				REP	MOVSB
+				POPA
+				ENDM
 
 ;***********************************************************************************
 ; Macro para desplegar una cadena.
 ;***********************************************************************************
-DESP		MACRO CADENA
-			MOV AH, 09H			; DESPLEGAR MENSAJE
-			LEA DX, CADENA
-			INT 21H
-			ENDM
+DESP			MACRO CADENA
+				MOV AH, 09H			; DESPLEGAR MENSAJE
+				LEA DX, CADENA
+				INT 21H
+				ENDM
 			
 ;***********************************************************************************
 ; Macro para desplegar una caracter.
 ;***********************************************************************************
-DESPC		MACRO CARACTER
-			MOV AH, 02H			; DESPLEGAR MENSAJE
-			MOV DL, CARACTER
-			INT 21H
-			ENDM
+DESPC			MACRO CARACTER
+				MOV AH, 02H			; DESPLEGAR MENSAJE
+				MOV DL, CARACTER
+				INT 21H
+				ENDM
 			
 ;***********************************************************************************
 ; Macro para limpiar una cadena.
 ;***********************************************************************************
-LIMPIAR		MACRO CADENA, LONGITUD
-			XOR CX, CX			 
-			MOV CX, LONGITUD
-			CLD
-			LEA SI, LIMPIA		; Cadena vacía
-			LEA DI, CADENA
-			REP	MOVSB
-			ENDM			
+LIMPIAR			MACRO CADENA, LONGITUD
+				XOR CX, CX			 
+				MOV CX, LONGITUD
+				CLD
+				LEA SI, LIMPIA		; Cadena vacía
+				LEA DI, CADENA
+				REP	MOVSB
+				ENDM			
 ;----------------------------------------------------------------------------------------------
 ; Macro para inicializar el área de datos
 ;----------------------------------------------------------------------------------------------
-INICIO 	   	MACRO			; define macro
-			MOV   AX, @DATA           ; inicializar area de datos
-			MOV   DS, AX
-			MOV   ES, AX
-			MOV   AX, 0003H				; modo texto 03h
-			INT   10H
-			ENDM			; fin macro	
+INICIO 	   		MACRO			; define macro
+				MOV   AX, @DATA           ; inicializar area de datos
+				MOV   DS, AX
+				MOV   ES, AX
+				MOV   AX, 0003H				; modo texto 03h
+				INT   10H
+				ENDM			; fin macro	
 
 ;***********************************************************************************
 ; Macro para restar variables.
 ;***********************************************************************************
-RESTAM		MACRO MINUENDO, SUSTRAENDO
-			PUSHA
-			MOV AX, MINUENDO
-			SUB AX, SUSTRAENDO
-			MOV LONG_COP, AX
-			POPA
-			ENDM
+RESTAM			MACRO MINUENDO, SUSTRAENDO
+				PUSHA
+				MOV AX, MINUENDO
+				SUB AX, SUSTRAENDO
+				MOV LONG_COP, AX
+				POPA
+				ENDM
 
 ;***********************************************************************************
 ; Macro para sumar variables.
 ;***********************************************************************************
-SUMAM		MACRO SUMANDO1, SUMANDO2
-			PUSHA
-			MOV AX, SUMANDO1
-			ADD AX, SUMANDO2
-			MOV SUMA, AX
-			POPA
-			ENDM
+SUMAM			MACRO SUMANDO1, SUMANDO2
+				PUSHA
+				MOV AX, SUMANDO1
+				ADD AX, SUMANDO2
+				MOV SUMA, AX
+				POPA
+				ENDM
 
 ;***********************************************************************************
 ; Macro para dividir variables.
 ;***********************************************************************************			
-DIVIDIR		MACRO DIVIDENDO, DIVISOR
-			PUSHA
-			MOV BX, DIVISOR
-			MOV DX, 0
-			MOV AX, DIVIDENDO
-			DIV BX
-			MOV COCIENTE, AX
-			MOV RESIDUO, DX
-			POPA
-			ENDM
+DIVIDIR			MACRO DIVIDENDO, DIVISOR
+				PUSHA
+				MOV BX, DIVISOR
+				MOV DX, 0
+				MOV AX, DIVIDENDO
+				DIV BX
+				MOV COCIENTE, AX
+				MOV RESIDUO, DX
+				POPA
+				ENDM
 			
 ;***********************************************************************************
 ; Macro para "mover de memoria a memoria".
 ;***********************************************************************************
-MOVM 		MACRO SRC, DTN
-			PUSH AX
-			MOV AX, SRC			; Fuente
-			MOV DTN, AX			; Destino
-			POP AX
-			ENDM
+MOVM 			MACRO SRC, DTN
+				PUSH AX
+				MOV AX, SRC			; Fuente
+				MOV DTN, AX			; Destino
+				POP AX
+				ENDM
 
 ELIMINAR_STRING	MACRO VECES
-			PUSHA
-			LOCAL CIC_ELI
-			XOR CX, CX
-			MOV CL, VECES
-CIC_ELI:	CALL BACKSPACE
-			LOOP CIC_ELI
-			POPA
-			ENDM	
+				PUSHA
+				LOCAL CIC_ELI
+				XOR CX, CX
+				MOV CL, VECES
+CIC_ELI:		CALL BACKSPACE
+				LOOP CIC_ELI
+				POPA
+				ENDM	
 
-IMP_NULLS	MACRO CADENA, APUNTADOR, VECES
-			PUSHA
-			MOV BX, APUNTADOR
-			MOV CX, VECES
-			LEA DI, CADENA[BX]
-			MOV AL, 00H
-			REP STOSB
-			POPA
-			ENDM
+IMP_NULLS		MACRO CADENA, APUNTADOR, VECES
+				PUSHA
+				MOV BX, APUNTADOR
+				MOV CX, VECES
+				LEA DI, CADENA[BX]
+				MOV AL, 00H
+				REP STOSB
+				POPA
+				ENDM
 
 INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 				PUSHA
@@ -155,14 +155,22 @@ INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 				POPA
 				ENDM
 
+SET_APUNTADOR   MACRO F, C
+				MOV AL, 80
+				MUL F
+				MOVZX APUNTADOR_CAD, F
+				XOR AX, AX
+				MOV AL, C
+				ADD APUNTADOR_CAD, AX
+				ENDM
 ;***********************************************************************************
 ; Macro para desplegar una caracter.
 ;***********************************************************************************
-DESPC		MACRO CARACTER
-			MOV AH, 02H			; DESPLEGAR MENSAJE
-			MOV DL, CARACTER
-			INT 21H
-			ENDM
+DESPC			MACRO CARACTER
+				MOV AH, 02H			; DESPLEGAR MENSAJE
+				MOV DL, CARACTER
+				INT 21H
+				ENDM
 
 			
 	.MODEL SMALL
@@ -212,7 +220,7 @@ STRING			DB	16 DUP (?),'$'
 APUNT			DB 	0
 PAGINA			DB  0
 NULL_A_IMP		DW	0
-
+OFFSET_CUR		DB  0
 ;STRING_NULL		DB	40 DUP (0H), '$'
 
 
@@ -830,32 +838,77 @@ TAB:			CALL  HAY_TAB
 FIN:		    RET
 SET_STR			ENDP
 
+;----------------------------------------------------------------------------------------------
+; Limpia el Buffer de Teclado.
+;----------------------------------------------------------------------------------------------
+CLEAN_BUFF 		PROC  NEAR
+				MOV   AH, 0CH
+				INT   16H
+				RET
+CLEAN_BUFF 		ENDP
+
+ES_ASCII		PROC  NEAR
+				CMP   ASCII, 13
+				JE    PRIN
+				CMP   ASCII, 09
+				JE    TABU
+				CMP   CT, 79
+				JNE   SIG
+				CMP   ASCII, 32
+				JE	  PRIN
+NO_SPACE1:		DEC   APUNTADOR_CAD
+				CMP	  APUNTADOR_CAD, 0
+				JE    PRIN
+				INC   OFFSET_CUR
+				MOV   BX, APUNTADOR_CAD
+				MOV   AL, CADENA_DEST[BX]
+				CMP   AL, 32
+				JNE   NO_SPACE
+				MOV   CT, OFFSET_CUR
+				INC   FT
+SAL_ASCII:		RET
+PRIN:			INC   FT
+				MOV   CT, 0
+				JMP   SAL_ASCII
+TABU:			CMP   CT, 67
+				JAE   CUR_FIN
+				ADD   CT, 12
+				JMP   SAL_ASCII
+CUR_FIN:		MOV   CT, 79
+				JMP   SAL_ASCII
+SIG:			INC   CT
+				JMP   SAL_ASCII
+ES_ASCII		ENDP
 ;-------------------------------------------------------------------------------------------
 ; FLUJO LÓGICO DEL PROGRAMA
 ;-------------------------------------------------------------------------------------------
-;FLUJO			PROC  NEAR
-;VUELVE:	   		CLEAN_BUFF				
-;AGAIN:      	GET_ET
-;				CMP   ASCII, 0
-;				JE    FUN_ES
-;				INSERT_C ASCII 
-;IMP_P:			CALL  REND_CAD
-;				CALL  SET_STR
-;				JMP   VUELVE
-;FUN_ES:			CLD						; izq a der
-;				MOV	  AL, RASTREO		; busca ‘a’ en TEXTO
-;				MOV	  CX, 13
-;				LEA	  DI, CAD_TABLA
-;COMP:			SCASB			; repite mientras no 
-;				JE    SALTA
-;				INC   DI
-;				LOOP  COMP
-;				JMP   VUELVE
-;SALTA:     		XOR	  BX, BX
-;				MOV   BL, [DI]   	; obtener el codigo
-;				CALL  [TABLA+BX] 	; salta a la tabla
-;				JMP   IMP_P
-;FLUJO			ENDP
+FLUJO			PROC  NEAR
+VUELVE:	   		CLEAN_BUFF	
+				GET_CUR PAGINA
+				MOV   FT, DH
+				MOV   CT, DL
+				SET_APUNTADOR DH, DL
+				GET_ET
+				CMP   ASCII, 0
+				JE    FUN_ES
+				INSERT_C ASCII 
+IMP_P:			CALL  REND_CAD
+				CALL  SET_STR
+				JMP   VUELVE
+FUN_ES:			CLD						; izq a der
+				MOV	  AL, RASTREO		; busca ‘a’ en TEXTO
+				MOV	  CX, 13
+				LEA	  DI, CAD_TABLA
+COMP:			SCASB			; repite mientras no 
+				JE    SALTA
+				INC   DI
+				LOOP  COMP
+				JMP   VUELVE
+SALTA:     		XOR	  BX, BX
+				MOV   BL, [DI]   	; obtener el codigo
+				CALL  [TABLA+BX] 	; salta a la tabla
+				JMP   IMP_P
+FLUJO			ENDP
 
 
 
