@@ -255,36 +255,45 @@ PAINT_MENU		PROC  NEAR
 PAINT_MENU		ENDP
 
 PAINT_SOMBRA	PROC  NEAR
-				MOV	  DH, TOPROW+1			; fila superior de sombra
+				MOV   AL, TOPROW
+				INC   AL
+				MOV	  DH, AL			; fila superior de sombra
 				LEA	  BP, SHADOW				; caracteres sombreados
 B20:			MOV	  AX, 1301H				; dibujar caja sombreada
 				MOV   BH, PAGINA			; PAGINA
 				MOV	  BL, 60H				; atributo
 				
+				MOV   AL, LEFCOL
+				INC   AL
 				MOVZX CX, LONG_MEN					; 19 caracteres
-				MOV	  DL, LEFCOL+1			; columna izq de sombra
+				MOV	  DL, AL			; columna izq de sombra
 				INT	  10H
 				INC	  DH						; siguiente fila
-				CMP	  DH, BOTROW+2			; se desplegaron todas las columnas?
+				MOV   AL, BOTROW
+				ADD   AL, 2
+				CMP	  DH, AL			; se desplegaron todas las columnas?
 				JNE	  B20						; no, repetir
 				RET
 PAINT_SOMBRA	ENDP
 
 PAINT_CUADRO	PROC  NEAR
-				LEA   BP, M_ARCHIVO				; linea del menu
+				MOV   BP, MENU
 				MOV	  DH, TOPROW				; fila
 B30:
 				MOV	  BH, PAGINA			;PAGINA
 				MOV   BL, 71H				; atributo: azul sobre blanco
 				MOV	  AX, 1300H				; solicitar menu de despliegue
-				MOV	  CX, 19					; longitud de la linea
+				MOVZX	  CX, LONG_MEN					; longitud de la linea
 				MOV	  DL, LEFCOL					; columna
 				PUSH  DX					; guarda el registro que contiene fila, columna
 				INT   10H
-				ADD	  BP, 19					; siguiente linea del menu
+				MOVZX AX, LONG_MEN
+				ADD	  BP, AX					; siguiente linea del menu
 				POP	  DX						; recupera registro con fila, columna
 				INC	  DH						; siguiente fila
-				CMP	  DH, BOTROW+1			; se mostraron todas las filas?
+				MOV   AL, BOTROW
+				INC   AL 
+				CMP	  DH, AL			; se mostraron todas las filas?
 				JNE	  B30						; no, repetir
 				RET
 PAINT_CUADRO	ENDP
@@ -319,12 +328,13 @@ AYUDA			ENDP
 ; Menus
 ;-------------------------------------------------------------------------------------------
 MOSTRAR_MENU	PROC  NEAR
-A20:			;CALL  Q10CLEAR                ; Se limpia la pantalla.
+A20:			CALL  Q10CLEAR                ; Se limpia la pantalla.
 				CALL  PAINT_MENU					; Desplegar menu
-				MOV   AL, TOPROW+1
+				MOV   AL, TOPROW
+				INC   AL
 				MOV   ROW, AL			; Fijar la fila en la primera opcion
 				MOV   ATTRIB, 17H				; fijar video inverso
-				;CALL  D10DISPLY				; resaltar linea actual
+				CALL  D10DISPLY				; resaltar linea actual
 				;CALL  C10INPUT				; leer opcion de menu
 				;CMP	  INGRESO, 1BH			;  presiono esc?
 				;JNE	  A20						; no, continuar
@@ -355,7 +365,8 @@ C30:			MOV	  INGRESO, AL
 				DEC   AL
 				CMP	  ROW, AL			; se paso de la ultima fila?
 				JBE	  C50						; no, ok
-				MOV   AL, TOPROW+1
+				MOV   AL, TOPROW
+				INC   AL
 				MOV	  ROW, AL		; si, iniciar fila
 				JMP	  C50
 C40:			MOV	  INGRESO, AL
@@ -366,7 +377,8 @@ C40:			MOV	  INGRESO, AL
 				INC   AL
 				CMP	  ROW, AL		; se paso de la primera fila?
 				JAE	  C50					; no, ok
-				MOV   AL, BOTROW-1
+				MOV   AL, BOTROW
+				DEC   AL
 				MOV	  ROW, AL		; si, iniciar fila
 
 C50:			MOV	  INGRESO, AL
@@ -404,8 +416,9 @@ D10DISPLY 		PROC  NEAR
 				PUSHA							; guardar registros
 				MOVZX AX, ROW					; la fila indica que linea fijar
 				SUB	  AL, TOPROW
-				IMUL  AX, 19					; multiplicar por longitud de linea
-				LEA	  SI, MENU+1					; para seleccionar fila del menu
+				MOVZX BX, LONG_MEN
+				IMUL  AX, BX				; multiplicar por longitud de linea
+				LEA	  SI, M_FORMATO+1					; para seleccionar fila del menu
 				ADD	  SI, AX
 
 				MOV	  AX, 1300H					; solicita despliegue
@@ -413,7 +426,9 @@ D10DISPLY 		PROC  NEAR
 				MOV	  BP, SI						; caracter de cadena menu
 				MOV	  CX, 17						; longitud de cadena menu
 				MOV	  DH, ROW						; fila
-				MOV	  DL, LEFCOL+1				; columna
+				MOV   AL, LEFCOL
+				INC   AL 
+				MOV	  DL, LEFCOL				; columna
 				INT	  10H
 				POPA							; recuperar registros
 				RET
@@ -425,44 +440,18 @@ D10DISPLY 		ENDP
 Q10CLEAR 		PROC  NEAR
 				PUSHA							; guardar registros
 				MOV	  AX, 0600H
-				MOV	  BH, 2FH					; blanco sobre verde
-				MOV	  CX, 0000H				; pantalla completa
-				MOV	  DX, 184FH				; fila 24, col 79
+				MOV	  BH, 17H					; blanco sobre verde
+				MOV	  CX, 0200H				; pantalla completa
+				MOV	  DX, 174FH				; fila 24, col 79
 				INT	  10H
 				POPA							; recuperar registros
 				RET
 Q10CLEAR 		ENDP
 
-;-------------------------------------------------------------------------------------------
-; fLUJO LÓGICO DEL PROGRAMA
-;-------------------------------------------------------------------------------------------
-;FLUJO			PROC  NEAR
-;VUELVE:	   		CLEAN_BUFF				
-;AGAIN:      	GET_ET
-;				CMP   ASCII, 0
-;				JE    FUN_ES
-;				INSERT_C ASCII 
-;IMP_P:			CALL  REND_CAD
-;				CALL  SET_STR
-;				JMP   VUELVE
-;FUN_ES:			CLD						; izq a der
-;				MOV	  AL, RASTREO		; busca ‘a’ en TEXTO
-;				MOV	  CX, 13
-;				LEA	  DI, CAD_TABLA
-;COMP:			SCASB			; repite mientras no 
-;				JE    SALTA
-;				INC   DI
-;				LOOP  COMP
-;				JMP   VUELVE
-;SALTA:     		XOR	  BX, BX
-;				MOV   BL, [DI]   	; obtener el codigo
-;				CALL  [TABLA+BX] 	; salta a la tabla
-;				JMP   IMP_P
-;FLUJO			ENDP
 
 MAIN			PROC  FAR
 				INICIO
-				CALL  ARCHIVO
+				CALL  FORMATO
 				MOV   AX, 4C00H		;salida al DOS
 				INT   21H
 MAIN			ENDP 
