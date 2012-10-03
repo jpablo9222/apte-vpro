@@ -193,7 +193,7 @@ LEFCOL			DB	?							; Columna izquierda menu
 ATTRIB			DB	?							; Atributo de pantalla
 ROW				DB	?							; Fila pantalla
 INGRESO			DB	?							; Guarda tecla ingresada
-SHADOW			DB	19	DUP(0DBH)				; Caracteres de sombreado
+SHADOW			DB	24	DUP(0DBH)				; Caracteres de sombreado
 MENU			DW  ?
 LONG_MEN		DB  ?
 B_MENUS			DB '  Archivo    Edición    Formato    Ayuda  ', 38 DUP (' '), '$'
