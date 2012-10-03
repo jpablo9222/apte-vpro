@@ -292,14 +292,14 @@ BACKSPACE		PROC NEAR
 				PUSHA
 SALE_BS:		MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				CMP APUNTADOR_CAD, 0								; Se comprueba que no esté en la primera columna y fila
-				JE  SALE_BS											; del áreaescritura, si lo está, no ejecuta la acción.
+				JE  SALE_BACKS										; del áreaescritura, si lo está, no ejecuta la acción.
 				DEC COP_APUNT_CAD									; Se hace una copia del apuntador para guardar el mismo.
 				MOV BX, COP_APUNT_CAD							
 				MOV AL, CADENA_DEST[BX]								; Se obtiene el caracter anterior al apuntador, si es NULL
 				CMP AL, 00H											; se ejecutan instrucciones para eliminar todos los NULL,
 				JE	ELIM_NULL										; de lo contario, se elimina solamente un caracter del String.
 				CALL COP_BS
-				POPA
+SALE_BACKS:		POPA
 				RET
 ELIM_NULL:		MOV CONT_NULL, 0									; Se inicializa CONT_NULL
 				INC CONT_NULL										
@@ -325,7 +325,7 @@ SUPRIMIR		PROC NEAR
 				MOV AL, CADENA_DEST[BX]								; Se compara el caracter de la posición en búsqueda 
 				CMP AL, 00H											; de algún NULL, si los hay, se accede a su correcto
 				JE SUPR_NULL										; procesamiento.
-				INC COP_APUNT_CAD
+				INC APUNTADOR_CAD
 				CALL BACKSPACE
 SALE_SUPR:		POPA
 				RET
@@ -377,6 +377,7 @@ CORTAR_CAD		PROC NEAR
 				LIMPIAR CADENA_COPIAR, LONG_CADP
 				MOV BX, APUNTADOR_CAD
 				COPIAR_CAD CADENA_DEST[BX], CADENA_COPIAR, LONG_CADP
+				;INC APUNTADOR_CAD
 				CALL ELIM_STR
 SALE_CUT:		POPA
 				RET
@@ -427,10 +428,9 @@ PEGA_CAD		PROC NEAR
 				ADD BX, LONG_CADP
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
 				LIMPIAR CADENA_AUX, LONG_AUX
-				SUMAM CANT_CAR, LONG_CADP
-				MOVM SUMA, CANT_CAR
-				SUMAM APUNTADOR_CAD, LONG_CADP
-				MOVM SUMA, APUNTADOR_CAD
+				MOV AX, LONG_CADP
+				ADD CANT_CAR, AX
+				ADD APUNTADOR_CAD, AX
 SALE_PEGA:		POPA
 				RET
 PEGA_CAD		ENDP
@@ -719,6 +719,7 @@ INSERTAR_CNULL	ENDP
 
 REND_CAD		PROC  NEAR
 				PUSHA
+				MOV   APUNTADOR_CAD, 0
 				LEA   SI, CADENA_DEST
 RECORRER:		LODSB
 				CMP	  AL, 00H
@@ -829,7 +830,32 @@ TAB:			CALL  HAY_TAB
 FIN:		    RET
 SET_STR			ENDP
 
-
+;-------------------------------------------------------------------------------------------
+; FLUJO LÓGICO DEL PROGRAMA
+;-------------------------------------------------------------------------------------------
+;FLUJO			PROC  NEAR
+;VUELVE:	   		CLEAN_BUFF				
+;AGAIN:      	GET_ET
+;				CMP   ASCII, 0
+;				JE    FUN_ES
+;				INSERT_C ASCII 
+;IMP_P:			CALL  REND_CAD
+;				CALL  SET_STR
+;				JMP   VUELVE
+;FUN_ES:			CLD						; izq a der
+;				MOV	  AL, RASTREO		; busca ‘a’ en TEXTO
+;				MOV	  CX, 13
+;				LEA	  DI, CAD_TABLA
+;COMP:			SCASB			; repite mientras no 
+;				JE    SALTA
+;				INC   DI
+;				LOOP  COMP
+;				JMP   VUELVE
+;SALTA:     		XOR	  BX, BX
+;				MOV   BL, [DI]   	; obtener el codigo
+;				CALL  [TABLA+BX] 	; salta a la tabla
+;				JMP   IMP_P
+;FLUJO			ENDP
 
 
 
@@ -852,12 +878,13 @@ MAIN PROC FAR
 		;CALL BACKSPACE
 		;CALL SUPRIMIR
 		;CALL COPIA_CAD
-		;CALL PEGA_CAD
 		;DESP CADENA_COPIAR
 		;INSERTAR_CAD CARACTER, LONG_CAR
 		;DESP CADENA_PRUEBA
 		COPIAR_CAD CADENA_PRUEBA, CADENA_DEST, 95
-		;MOV APUNTADOR_CAD, 6
+		;MOV APUNTADOR_CAD, 5
+		;CALL CORTAR_CAD
+		;CALL PEGA_CAD
 		;CALL TABULADOR
 		;MOV APUNTADOR_CAD, 0
 		;SET_CUR 00, 00, 00
