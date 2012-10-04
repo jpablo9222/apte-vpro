@@ -206,7 +206,6 @@ INSERTAR_C 		MACRO CARACTER
 IMP_SIG:		INC CANT_CAR
 				MOV BX, APUNTADOR_CAD
 				COPIAR_CAD ASCII, CADENA_DEST[BX], 1
-				JMP INS_C
 INS_C:			POPA			
 				ENDM
 			
@@ -224,7 +223,7 @@ SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
 			
 			
 	.MODEL SMALL
-	.STACK 1024
+	.STACK 2048
 	.386
 ;-------------------------------------------------------------------------------------------
 ; Inicio de Datos
@@ -335,6 +334,7 @@ PAINT_MENU		PROC  NEAR
 PAINT_MENU		ENDP
 
 PAINT_SOMBRA	PROC  NEAR
+				PUSHA
 				MOV   AL, TOPROW
 				INC   AL
 				MOV	  DH, AL									; fila superior de sombra
@@ -353,10 +353,12 @@ B20:			MOV	  AX, 1301H									; dibujar caja sombreada
 				ADD   AL, 2
 				CMP	  DH, AL									; se desplegaron todas las columnas?
 				JNE	  B20										; no, repetir
+				POPA
 				RET
 PAINT_SOMBRA	ENDP
 
 PAINT_CUADRO	PROC  NEAR
+				PUSHA
 				MOV   BP, MENU
 				MOV	  DH, TOPROW								; fila
 B30:
@@ -375,6 +377,7 @@ B30:
 				INC   AL 
 				CMP	  DH, AL									; se mostraron todas las filas?
 				JNE	  B30										; no, repetir
+				POPA
 				RET
 PAINT_CUADRO	ENDP
 
@@ -1168,9 +1171,8 @@ ES_ASCII		PROC  NEAR
 				CMP   ASCII, 32
 				JE	  PRIN
 				MOV   OFFSET_CUR, 0
+				RESTAM APUNTADOR_CAD, 79
 NO_SPACE1:		DEC   APUNTADOR_CAD
-				DIVIDIR APUNTADOR_CAD, LONG_LINE
-				RESTAM APUNTADOR_CAD, RESIDUO
 				MOV	  CX, LONG_COP
 				CMP	  APUNTADOR_CAD, CX
 				JE    PRIN
@@ -1222,8 +1224,6 @@ VUELVE:	   		CALL CLEAN_BUFF
 				MOV FT, AL
 				MOV AL, COL_ACTUAL
 				MOV CT, AL
-				;MOVM   FILA_ACTUAL, FT
-				;MOVM   COL_ACTUAL, CT
 				SET_APUNTADOR FT, CT
 				CALL  GET_ET
 				CMP	  RASTREO, 0
