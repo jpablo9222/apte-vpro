@@ -335,7 +335,7 @@ TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con
 				DW  F_DER
 				DW  F_UP
 				DW  T_END
-HOME, DEL, INSRT, PGDN, PGUP, F_AB, F_IZ, F_DER, F_UP				
+			
 TABLA2 			DW  FARCHIVO
 				DW  FEDICION
 				DW  FFORMATO
