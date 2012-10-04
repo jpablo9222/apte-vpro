@@ -68,9 +68,9 @@ MOV_APUN 	MACRO MANEJADOR, REGISTRO, POS
 ;***********************************************************************************
 ; Macro para abrir archivo. 
 ;***********************************************************************************
-ABRIR_A		MACRO NOM_ARCHIVO, MODO
+ABRIR_A		MACRO NOM_ARCHIVO
 			MOV AH, 3DH			; petición
-			MOV AL, MODO			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
+			MOV AL, 02H			; 00: modo sólo lectura, 01: solo escritura, 02: lect/escr
 			LEA DX, NOM_ARCHIVO	; cadena ASCIIZ
 			INT	21H
 			MOV	MANEJ, AX		; guardar el manejador
