@@ -488,18 +488,21 @@ PAINT_CUADRO	ENDP
 
 ;------------------------------------------------------------------------------------------
 ARCHIVO			PROC  NEAR
+				MOV   FUN, 0
 				SET_SP 1, 5, 0, 12, M_ARCHIVO
 				CALL  MOSTRAR_MENU
 				RET
 ARCHIVO			ENDP
 
 EDICION			PROC  NEAR
+				MOV   FUN, 2
 				SET_SP 1, 6, 12, 24, M_EDICION
 				CALL  MOSTRAR_MENU
 				RET
 EDICION 		ENDP
 
 FORMATO			PROC  NEAR
+				MOV   FUN, 4
 				SET_SP 1, 4, 23, 12, M_FORMATO
 				CALL  MOSTRAR_MENU
 				RET
@@ -514,6 +517,7 @@ SALIR_P			ENDP
 
 
 AYUDA			PROC  NEAR
+				MOV   FUN, 6
 				SET_SP 1, 4, 32, 20, M_AYUDA
 				CALL  MOSTRAR_MENU
 				RET
@@ -623,7 +627,7 @@ C50:			MOV	  INGRESO, AL
 				JMP	  C20
 C100:  			MOV   ATTRIB, 17H
 				CALL  D10DISPLY
-				;CALL  OUT_M
+				CALL  OUT_M
 C90:
 				MOV	  INGRESO, AL
 				POPA											; recuperar registros
@@ -632,16 +636,10 @@ C10INPUT 		ENDP
 
 OUT_M   		PROC  NEAR
 				PUSHA											; guardar registros
-				MOVZX AX, ROW									; la fila indica que linea se seleccionó.
-				SUB	  AL, TOPROW
-				DEC   AX
-				IMUL  AX, 29									; multiplicar por longitud de linea
-				;LEA	  SI, MSJ_A								; para seleccionar mensaje correspondiente
-				ADD	  SI, AX
-				MOV   BP, SI
-				;CALL  MSJ_PRO
-				MOV   AH, 10H                 					;Se espera una tecla cualquiera para continuar.
-				INT   16H
+				XOR   BX, BX
+				MOV   BL, FUN
+				CALL  [TABLA2+BX] 	; salta a la tabla
+				MOV   INGRESO, 1BH
 				POPA											; recuperar registros
 				RET
 OUT_M   		ENDP
