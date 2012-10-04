@@ -1048,7 +1048,7 @@ PEGA_CAD		PROC NEAR
 				MOV AX, LONG_STRING1								; Si la cadena es mayor a la
 				SUMAM CANT_CAR, LONG_CADP							; longitud del String no 
 				CMP SUMA, AX										; realiza la acción.
-				JA SALE_PEGA
+				JAE SALE_PEGA
 				MOV BX, APUNTADOR_CAD
 				RESTAM CANT_CAR, APUNTADOR_CAD
 				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
@@ -1431,7 +1431,7 @@ RECORRER1:		MOV   BX, CANT_CAR
 				JE    FIN2
 				MOV	  AL, [SI]
 				MOV   CHAR, AL
-				GET_CUR 0
+				GET_CUR PAGINA
 				CMP	  CHAR, 13
 				JE	  ENTERR
 				CMP   CHAR, 09
@@ -1481,7 +1481,7 @@ NO_SPACE1:		DEC   APUNTADOR_CAD
 				MOV   BX, APUNTADOR_CAD
 				MOV   AL, CADENA_DEST[BX]
 				CMP   AL, 32
-				JNE   NO_SPACE
+				JNE   NO_SPACE1
 				XOR	  DX, DX
 				MOV	  DX, OFFSET_CUR
 				MOV   CT, DL
@@ -1556,12 +1556,12 @@ FLUJO			ENDP
 
 MAIN PROC FAR
 
-		INICIO
-		CREAR_A NOMBRE
-		CALL  Q10CLEAR
-		SET_CUR PAGINA, 0, 2
-		;SET_APUNTADOR DH, DL
-		CALL FLUJO
+				INICIO
+				CREAR_A NOMBRE
+				CALL  Q10CLEAR
+				SET_CUR PAGINA, 0, 2
+				;SET_APUNTADOR DH, DL
+				CALL FLUJO
 
 MAIN 	ENDP
 ;-----------------------------------------------------------------------------------------------------
