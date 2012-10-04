@@ -174,6 +174,7 @@ SET_APUNTADOR   MACRO FILA, COLUMNA
 				XOR AX, AX
 				MOV AL, COLUMNA
 				ADD APUNTADOR_CAD, AX
+				SUB APUNTADOR_CAD, 160
 				ENDM
 ;***********************************************************************************
 ; Macro para desplegar una caracter.
@@ -190,7 +191,6 @@ DESPC			MACRO CARACTER
 INSERTAR_C 		MACRO CARACTER
 				LOCAL INS_C
 				LOCAL IMP_SIG
-				PUSHA
 				LIMPIAR CADENA_AUX, LONG_AUX
 				MOV DX, CANT_CAR
 				CMP APUNTADOR_CAD, DX
@@ -205,8 +205,8 @@ INSERTAR_C 		MACRO CARACTER
 				JMP INS_C
 IMP_SIG:		INC CANT_CAR
 				MOV BX, APUNTADOR_CAD
-				COPIAR_CAD ASCII, CADENA_DEST[BX], 1
-INS_C:			POPA			
+INS_C:			COPIAR_CAD ASCII, CADENA_DEST[BX], 1
+				INC APUNTADOR_CAD
 				ENDM
 			
 ;***********************************************************************************
@@ -860,9 +860,11 @@ DISTANCIA_MENOR ENDP
 ;----------------------------------------------------------------------------------------------
 MOVC_UP			PROC NEAR
 				PUSHA
-				MOV AX, LONG_LINE
-				CMP APUNTADOR_CAD, AX
-				JB SALE_UP
+				DEC FT
+				CMP FT, 2
+				;MOV AX, LONG_LINE
+				;CMP APUNTADOR_CAD, AX
+				JBE SALE_UP
 				RESTAM APUNTADOR_CAD, LONG_LINE
 				DEC FT
 				MOVM LONG_COP, APUNTADOR_CAD
@@ -893,7 +895,7 @@ MOVC_DOWN		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				SUMAM COP_APUNT_CAD, CANT_CAR
-				MOV AX, LONG_STRING1
+				MOV AX, 1840
 				CMP SUMA, AX
 				JA SALE_DOWN
 				MOV AX, CANT_CAR
@@ -962,8 +964,8 @@ HOME_STR		PROC NEAR
 				MOVM LONG_COP, APUNTADOR_CAD
 				MOV CX, RESIDUO
 				SUB CT, CL
-				RET
 				POPA
+				RET
 HOME_STR		ENDP
 
 ;----------------------------------------------------------------------------------------------
@@ -1204,6 +1206,7 @@ BACKS:			CALL  BACKSPACE
 				MOV CT, AL
 				MOV AX, COCIENTE
 				MOV FT, AL
+				ADD FT, 2
 				JMP   BACK_LOL
 ES_ASCII		ENDP
 
@@ -1256,7 +1259,7 @@ MAIN PROC FAR
 		INICIO
 		CALL  Q10CLEAR
 		SET_CUR PAGINA, 0, 2
-		SET_APUNTADOR DH, DL
+		;SET_APUNTADOR DH, DL
 		CALL FLUJO
 
 		MOV   AX, 4C00H		;salida al DOS
