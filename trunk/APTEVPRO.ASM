@@ -581,7 +581,11 @@ FORMATO			PROC  NEAR
 FORMATO			ENDP
 
 SALIR_P			PROC NEAR
-
+				MOV		AX, 0600H
+				MOV		BH, 07H					; blanco sobre verde
+				MOV		CX, 0000H				; pantalla completa
+				MOV		DX, 184FH				; fila 24, col 79
+				INT		10H
 				MOV   AX, 4C00H		;salida al DOS
 				INT   21H
 				RET
