@@ -628,9 +628,10 @@ C50:			MOV	  INGRESO, AL
 C100:  			MOV   ATTRIB, 17H
 				CALL  D10DISPLY
 				CALL  OUT_M
+				JMP   SAL_YA
 C90:
 				MOV	  INGRESO, AL
-				POPA											; recuperar registros
+SAL_YA:			POPA											; recuperar registros
 				RET
 C10INPUT 		ENDP
 
