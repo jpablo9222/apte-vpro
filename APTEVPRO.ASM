@@ -220,7 +220,45 @@ SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
 				LEA   DX, MEN
 				MOV   MENU, DX
 				ENDM
-			
+
+;***********************************************************************************
+; Macro para crear un archivo.
+;***********************************************************************************
+CREAR_A		MACRO NOM_ARCHIVO
+			MOV	AH, 3CH			; PETICION
+			MOV	CX, 00			; ATRIBUTO NORMAL
+			LEA DX, MANEJ	; CADENA ASCIIZ
+			INT 21H				; LLAMA AL DOS
+			MOV	MANEJ, AX		; GUARDA EL MANEJADOR
+			ENDM
+				
+;***********************************************************************************
+; Macro para abrir un archivo previamente guardado
+;***********************************************************************************
+ABRIR_A	     	MACRO NOM_ARCHIVO
+				MOV AH, 3DH			    
+				MOV AL, 02H			    
+				LEA DX, NOM_ARCHIVO	    
+				INT 21H
+				MOV MANEJ, AX		    
+				ENDM				
+
+;***********************************************************************************
+; Macro para leer un archivo previamente guardado
+;***********************************************************************************
+LEER_A	     	MACRO MANEJADOR
+				MOV AH, 3FH			    
+				MOV BX, MANEJADOR	    
+				MOV CX, 1839  		    
+				LEA DX, TEXT_P		    
+				INT 21H
+				ENDM			
+				
+GUARDAR_A		MACRO MANEJADOR
+				MOV	AH, 3EH			
+				MOV BX, MANEJADOR
+				INT	21H
+				ENDM		
 			
 	.MODEL SMALL
 	.STACK 2048
@@ -229,20 +267,24 @@ SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
 ; Inicio de Datos
 	.DATA
 
+NOMBRE			DB	'APTEVPRO.TXT',00H
+MANEJ		DW	  	?
+TEXT_P			DB	1680 DUP (?), '$'
 CARACTER_NULL	DB	00H
 CARACTER		DB	 ' $'
 LONG_CAR		DW 	1
-CADENA_DEST		DB	720 DUP (?),'$'
-LONG_STRING1	DW	720
+CADENA_DEST		DB	1680 DUP (?),'$'
+CADENA_DEST1	DB	1680 DUP (?),'$'
+CADENA_DEST2	DB	1680 DUP (?),'$'
+CADENA_DEST3	DB	1680 DUP (?),'$'
+LONG_STRING1	DW	1680
 CANT_CAR		DW	0
 COP_CANT_CAR	DW	0
 APUNTADOR_CAD	DW 	0
 COP_APUNT_CAD	DW	?
 COP2_APUNT_CAD	DW	?
-CADENA_AUX		DB 	2000 DUP (' '),'$'
-LONG_AUX		DW	2000
-S_2_INS			DB	'**********','$'
-LONG_STRING2	DW	10
+CADENA_AUX		DB 	1680 DUP (' '),'$'
+LONG_AUX		DW	1680
 LIMPIA			DB	80 DUP (' ')							 	; cadena para limpiar línea.
 LONG_COP		DW	?
 SUMA			DW  ?
@@ -269,13 +311,14 @@ APUNT			DB 	0
 PAGINA			DB  0
 NULL_A_IMP		DW	0
 OFFSET_CUR		DW  0
-FUN				DB  ?
 ;GET_ET
 ASCII			DB  0
 RASTREO			DB 	0
 ;CURSOR
 CT				DB 	0
 FT				DB	0
+FUN				DB  ?
+
 ;TABLA DE BIFUCACIÓN
 CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24
 TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con sus cuatro opciones
@@ -295,7 +338,10 @@ T_EDICION		DW  CORTAR_CAD
 T_ARCHIVO		DW  ABRIR_AR
 				DW  GUARDAR_AR
 				DW  SALIR_P
-;STRING_NULL		DB	40 DUP (0H), '$'
+;----------------------------------------------------------------------------------------------
+; Manejo de archivos y cerrar programa
+;----------------------------------------------------------------------------------------------
+
 
 ;PARTE GRÁFICA LOL
 TOPROW			DB	?					    					; Fila superior menu
@@ -307,7 +353,6 @@ INGRESO			DB	?											; Guarda tecla ingresada
 SHADOW			DB	40	DUP(0DBH)								; Caracteres de sombreado
 MENU			DW  ?
 LONG_MEN		DB  ?
-NOMBRE			DB '        .TXT', 00H
 B_NA			DB 36 DUP (0C4H), 'UNTITLED', 36 DUP (0C4H), '$'
 B_MENUS			DB '  Archivo    Edicion    Formato    Ayuda  ', 38 DUP (' '), '$'
 B_ABAJO			DB ' F1 - Archivo    F2 - Edicion    F3 - Formato    F4 - Ayuda ', 20 DUP (' '), '$'  
@@ -336,6 +381,52 @@ M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH					; Dibuja menu
 
 	.CODE
 
+FARCHIVO		PROC  NEAR
+				XOR   BX, BX
+				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
+				SUB	  BL, TOPROW
+				DEC   BX
+				SHL	  BX, 01
+				CALL  [T_ARCHIVO+BX]
+				RET
+FARCHIVO		ENDP
+
+FEDICION		PROC  NEAR
+				XOR   BX, BX
+				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
+				SUB	  BL, TOPROW
+				DEC   BX
+				SHL	  BX, 01
+				CALL  [T_EDICION+BX]
+				RET
+FEDICION		ENDP
+
+FFORMATO		PROC  NEAR
+				RET
+FFORMATO		ENDP
+
+
+FAYUDA			PROC  NEAR
+				RET
+FAYUDA			ENDP
+	
+ABRIR_AR		PROC NEAR
+				ABRIR_A NOMBRE
+				RET
+ABRIR_AR		ENDP
+
+GUARDAR_AR		PROC NEAR
+				GUARDAR_A MANEJ
+				RET
+GUARDAR_AR		ENDP
+				
+CERRAR_AR		PROC NEAR
+				
+				MOV   AX, 4C00H		;salida al DOS
+				INT   21H
+				RET
+CERRAR_AR		ENDP
+				
 ;-------------------------------------------------------------------------------------------
 ; Imprime el menu de acuerdo a aja
 ;-------------------------------------------------------------------------------------------
@@ -397,60 +488,78 @@ PAINT_CUADRO	ENDP
 
 ;------------------------------------------------------------------------------------------
 ARCHIVO			PROC  NEAR
-				MOV   FUN, 0
 				SET_SP 1, 5, 0, 12, M_ARCHIVO
 				CALL  MOSTRAR_MENU
 				RET
 ARCHIVO			ENDP
 
-FARCHIVO		PROC  NEAR
-				XOR   BX, BX
-				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
-				SUB	  BL, TOPROW
-				DEC   BX
-				SHL	  BX, 01
-				CALL  [T_ARCHIVO+BX]
-				RET
-FARCHIVO		ENDP
-
 EDICION			PROC  NEAR
-				MOV   FUN, 2
 				SET_SP 1, 6, 12, 24, M_EDICION
 				CALL  MOSTRAR_MENU
 				RET
 EDICION 		ENDP
 
-FEDICION		PROC  NEAR
-				XOR   BX, BX
-				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
-				SUB	  BL, TOPROW
-				DEC   BX
-				SHL	  BX, 01
-				CALL  [T_EDICION+BX]
-				RET
-FEDICION		ENDP
-
 FORMATO			PROC  NEAR
-				MOV   FUN, 4
 				SET_SP 1, 4, 23, 12, M_FORMATO
 				CALL  MOSTRAR_MENU
 				RET
 FORMATO			ENDP
 
-FFORMATO		PROC  NEAR
+SALIR_P			PROC NEAR
+
+				MOV   AX, 4C00H		;salida al DOS
+				INT   21H
 				RET
-FFORMATO		ENDP
+SALIR_P			ENDP
+
 
 AYUDA			PROC  NEAR
-				MOV   FUN, 6
 				SET_SP 1, 4, 32, 20, M_AYUDA
 				CALL  MOSTRAR_MENU
 				RET
 AYUDA			ENDP
 
-FAYUDA			PROC  NEAR
+HOME			PROC NEAR
+				CALL HOME_STR
 				RET
-FAYUDA			ENDP
+HOME			ENDP
+
+DEL				PROC NEAR
+				CALL SUPRIMIR
+				RET
+DEL				ENDP
+
+INSRT			PROC NEAR
+				RET
+INSRT			ENDP
+
+PGDN			PROC NEAR
+				RET
+PGDN			ENDP
+
+PGUP			PROC NEAR
+				RET
+PGUP			ENDP
+
+F_AB			PROC NEAR
+				CALL MOVC_DOWN
+				RET
+F_AB			ENDP
+
+F_IZ			PROC NEAR
+				CALL MOVC_IZ
+				RET
+F_IZ			ENDP
+
+F_DER			PROC NEAR
+				CALL MOVC_DER
+				RET
+F_DER			ENDP
+
+F_UP			PROC NEAR
+				CALL MOVC_UP
+				RET
+F_UP			ENDP
 
 
 ;-------------------------------------------------------------------------------------------
@@ -514,19 +623,25 @@ C50:			MOV	  INGRESO, AL
 				JMP	  C20
 C100:  			MOV   ATTRIB, 17H
 				CALL  D10DISPLY
-				CALL  OUT_M
-				JMP   SAL_YA
-C90:			MOV   INGRESO, AL
-SAL_YA:			POPA											; recuperar registros
+				;CALL  OUT_M
+C90:
+				MOV	  INGRESO, AL
+				POPA											; recuperar registros
 				RET
 C10INPUT 		ENDP
 
 OUT_M   		PROC  NEAR
 				PUSHA											; guardar registros
-				XOR   BX, BX
-				MOV   BL, FUN
-				CALL  [TABLA2+BX] 	; salta a la tabla
-				MOV   INGRESO, 1BH
+				MOVZX AX, ROW									; la fila indica que linea se seleccionó.
+				SUB	  AL, TOPROW
+				DEC   AX
+				IMUL  AX, 29									; multiplicar por longitud de linea
+				;LEA	  SI, MSJ_A								; para seleccionar mensaje correspondiente
+				ADD	  SI, AX
+				MOV   BP, SI
+				;CALL  MSJ_PRO
+				MOV   AH, 10H                 					;Se espera una tecla cualquiera para continuar.
+				INT   16H
 				POPA											; recuperar registros
 				RET
 OUT_M   		ENDP
@@ -900,7 +1015,6 @@ DISTANCIA_MENOR ENDP
 ;----------------------------------------------------------------------------------------------
 MOVC_UP			PROC NEAR
 				PUSHA
-				DEC FT
 				CMP FT, 2
 				;MOV AX, LONG_LINE
 				;CMP APUNTADOR_CAD, AX
@@ -935,7 +1049,8 @@ MOVC_DOWN		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
 				SUMAM COP_APUNT_CAD, CANT_CAR
-				MOV AX, 1840
+				
+				MOV AX, 1680
 				CMP SUMA, AX
 				JA SALE_DOWN
 				MOV AX, CANT_CAR
@@ -1044,6 +1159,7 @@ NEGRITAS		PROC NEAR
 				MOV DL, 00010111B
 				CMP B_NEGRITAS,0
 				JE AC_NEGRITAS
+				DEC B_NEGRITAS
 IN_NEG:			DIVIDIR APUNTADOR_CAD, LONG_LINE
 				RESTAM APUNTADOR_CAD, RESIDUO
 				MOVM LONG_COP, APUNTADOR_CAD
@@ -1061,7 +1177,8 @@ SIG_CAR:		MOV BX, COP_APUNT_CAD
 				LOOP SIG_CAR			
 				POPA
 				RET
-AC_NEGRITAS:	OR DL, 00001000B
+AC_NEGRITAS:	INC B_NEGRITAS
+				OR DL, 00001000B
 				JMP IN_NEG				
 NEGRITAS		ENDP
 
@@ -1276,7 +1393,7 @@ VUELVE:	   		CALL CLEAN_BUFF
 				CALL  ES_ASCII
 				
 IMP_P:			CALL  REND_CAD
-				CALL  Q10CLEAR
+				CALL Q10CLEAR
 				CALL  SET_STR
 				SET_CUR PAGINA, CT, FT
 				JMP   VUELVE
@@ -1301,6 +1418,7 @@ MAIN PROC FAR
 		CALL  Q10CLEAR
 		SET_CUR PAGINA, 0, 2
 		;SET_APUNTADOR DH, DL
+		CREAR_A NOMBRE
 		CALL FLUJO
 
 		MOV   AX, 4C00H		;salida al DOS
