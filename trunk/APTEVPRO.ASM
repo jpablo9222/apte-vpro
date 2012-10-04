@@ -269,6 +269,7 @@ APUNT			DB 	0
 PAGINA			DB  0
 NULL_A_IMP		DW	0
 OFFSET_CUR		DW  0
+FUN				DB  ?
 ;GET_ET
 ASCII			DB  0
 RASTREO			DB 	0
@@ -281,6 +282,19 @@ TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con
 				DW  EDICION
 				DW  FORMATO
 				DW  AYUDA
+				
+TABLA2 			DW  FARCHIVO
+				DW  FEDICION
+				DW  FFORMATO
+				DW  FAYUDA
+				
+T_EDICION		DW  CORTAR_CAD
+				DW  COPIA_CAD
+				DW  PEGA_CAD
+				
+T_ARCHIVO		DW  ABRIR_AR
+				DW  GUARDAR_AR
+				DW  SALIR_P
 ;STRING_NULL		DB	40 DUP (0H), '$'
 
 ;PARTE GRÁFICA LOL
@@ -383,28 +397,56 @@ PAINT_CUADRO	ENDP
 
 ;------------------------------------------------------------------------------------------
 ARCHIVO			PROC  NEAR
+				MOV   FUN, 0
 				SET_SP 1, 5, 0, 12, M_ARCHIVO
 				CALL  MOSTRAR_MENU
 				RET
 ARCHIVO			ENDP
 
+FARCHIVO		PROC  NEAR
+				
+				RET
+FARCHIVO		ENDP
+
 EDICION			PROC  NEAR
+				MOV   FUN, 2
 				SET_SP 1, 6, 12, 24, M_EDICION
 				CALL  MOSTRAR_MENU
 				RET
 EDICION 		ENDP
 
+FEDICION		PROC  NEAR
+				XOR   BX, BX
+				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
+				SUB	  BL, TOPROW
+				DEC   BX
+				SHL	  BX, 01
+				CALL  [T_EDICION+BX]
+				RET
+
+FEDICION		ENDP
+
 FORMATO			PROC  NEAR
+				MOV   FUN, 4
 				SET_SP 1, 4, 23, 12, M_FORMATO
 				CALL  MOSTRAR_MENU
 				RET
 FORMATO			ENDP
 
+FFORMATO		PROC  NEAR
+				RET
+FFORMATO		ENDP
+
 AYUDA			PROC  NEAR
+				MOV   FUN, 6
 				SET_SP 1, 4, 32, 20, M_AYUDA
 				CALL  MOSTRAR_MENU
 				RET
 AYUDA			ENDP
+
+FAYUDA			PROC  NEAR
+				RET
+FAYUDA			ENDP
 
 
 ;-------------------------------------------------------------------------------------------
@@ -468,25 +510,19 @@ C50:			MOV	  INGRESO, AL
 				JMP	  C20
 C100:  			MOV   ATTRIB, 17H
 				CALL  D10DISPLY
-				;CALL  OUT_M
-C90:
-				MOV	  INGRESO, AL
-				POPA											; recuperar registros
+				CALL  OUT_M
+				JMP   SAL_YA
+C90:			MOV   INGRESO, AL
+SAL_YA:			POPA											; recuperar registros
 				RET
 C10INPUT 		ENDP
 
 OUT_M   		PROC  NEAR
 				PUSHA											; guardar registros
-				MOVZX AX, ROW									; la fila indica que linea se seleccionó.
-				SUB	  AL, TOPROW
-				DEC   AX
-				IMUL  AX, 29									; multiplicar por longitud de linea
-				;LEA	  SI, MSJ_A								; para seleccionar mensaje correspondiente
-				ADD	  SI, AX
-				MOV   BP, SI
-				;CALL  MSJ_PRO
-				MOV   AH, 10H                 					;Se espera una tecla cualquiera para continuar.
-				INT   16H
+				XOR   BX, BX
+				MOV   BL, FUN
+				CALL  [TABLA2+BX] 	; salta a la tabla
+				MOV   INGRESO, 1BH
 				POPA											; recuperar registros
 				RET
 OUT_M   		ENDP
@@ -1236,6 +1272,7 @@ VUELVE:	   		CALL CLEAN_BUFF
 				CALL  ES_ASCII
 				
 IMP_P:			CALL  REND_CAD
+				CALL  Q10CLEAR
 				CALL  SET_STR
 				SET_CUR PAGINA, CT, FT
 				JMP   VUELVE
