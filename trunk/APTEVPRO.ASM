@@ -329,13 +329,13 @@ TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con
 				DW  DEL
 				DW  INSRT
 				DW  PGDN
-				DW  PGDUP
+				DW  PGUP
 				DW  F_AB
 				DW  F_IZ
 				DW  F_DER
 				DW  F_UP
 				DW  T_END
-			
+		
 TABLA2 			DW  FARCHIVO
 				DW  FEDICION
 				DW  FFORMATO
@@ -553,11 +553,23 @@ INSRT			PROC NEAR
 INSRT			ENDP
 
 PGDN			PROC NEAR
-				RET
-PGDN			ENDP
+				DEC PAGINA
+				CMP PAGINA, 0
+				JE S_PGD
+				MOV AL, PAGINA
+				MOV AH, 05H
+				INT 10H
+S_PGD:			RET
+PGDN			ENDP				
 
 PGUP			PROC NEAR
-				RET
+				INC PAGINA
+				CMP PAGINA, 3
+				JE S_PGU
+				MOV AL, PAGINA
+				MOV AH, 05H
+				INT 10H
+S_PGU:			RET
 PGUP			ENDP
 
 F_AB			PROC NEAR
@@ -1144,7 +1156,7 @@ HOME_STR		ENDP
 ;----------------------------------------------------------------------------------------------
 END_STR			PROC NEAR
 				PUSHA
-				RESTAM LONG_STRING1, APUNTADOR_CAD
+				RESTAM CANT_CAR, APUNTADOR_CAD
 				MOV AX, LONG_LINE
 				CMP AX, LONG_COP
 				JAE I_CANT_CAR
@@ -1413,7 +1425,7 @@ IMP_P:			CALL  REND_CAD
 				JMP   VUELVE
 FUN_ES:			CLD						; izq a der
 				MOV	  AL, RASTREO		; busca ‘a’ en TEXTO
-				MOV	  CX, 13
+				MOV	  CX, 14
 				LEA	  DI, CAD_TABLA
 COMP:			SCASB			; repite mientras no 
 				JE    SALTA
