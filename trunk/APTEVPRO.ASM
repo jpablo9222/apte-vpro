@@ -320,12 +320,22 @@ FT				DB	0
 FUN				DB  ?
 
 ;TABLA DE BIFUCACIÓN
-CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24
+CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24, 4FH, 26
 TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con sus cuatro opciones
 				DW  EDICION
 				DW  FORMATO
 				DW  AYUDA
-				
+				DW  HOME
+				DW  DEL
+				DW  INSRT
+				DW  PGDN
+				DW  PGDUP
+				DW  F_AB
+				DW  F_IZ
+				DW  F_DER
+				DW  F_UP
+				DW  T_END
+HOME, DEL, INSRT, PGDN, PGUP, F_AB, F_IZ, F_DER, F_UP				
 TABLA2 			DW  FARCHIVO
 				DW  FEDICION
 				DW  FFORMATO
@@ -522,6 +532,11 @@ AYUDA			PROC  NEAR
 				CALL  MOSTRAR_MENU
 				RET
 AYUDA			ENDP
+
+T_END				PROC NEAR
+				CALL END_STR
+				RET
+T_END				ENDP
 
 HOME			PROC NEAR
 				CALL HOME_STR
