@@ -117,7 +117,10 @@ MOVM 			MACRO SRC, DTN
 				MOV DTN, AX			; Destino
 				POP AX
 				ENDM
-
+				
+;***********************************************************************************
+; Macro para eliminar una línea completa.
+;***********************************************************************************
 ELIMINAR_STRING	MACRO VECES
 				PUSHA
 				LOCAL CIC_ELI
@@ -128,6 +131,9 @@ CIC_ELI:		CALL BACKSPACE
 				POPA
 				ENDM	
 
+;*********************************************************************************************
+; Macro para imprimir el caracter NULL n VECES comenzando en la posición que APUNTADOR indica
+;*********************************************************************************************				
 IMP_NULLS		MACRO CADENA, APUNTADOR, VECES
 				PUSHA
 				MOV BX, APUNTADOR
@@ -138,6 +144,9 @@ IMP_NULLS		MACRO CADENA, APUNTADOR, VECES
 				POPA
 				ENDM
 
+;***********************************************************************************
+; Macro para insertar una cadena de longitud LONG_CAD_COP
+;***********************************************************************************				
 INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 				PUSHA
 				LIMPIAR CADENA_AUX, LONG_AUX
@@ -155,6 +164,9 @@ INSERTAR_CAD	MACRO CADENA_COPIAR, LONG_CAD_COP
 				POPA
 				ENDM
 
+;***********************************************************************************
+; Macro para mover el apuntador a la coordenada (FILA, COLUMNA)
+;***********************************************************************************				
 SET_APUNTADOR   MACRO FILA, COLUMNA
 				MOV AL, 80
 				MUL FILA
@@ -172,6 +184,9 @@ DESPC			MACRO CARACTER
 				INT 21H
 				ENDM
 
+;***********************************************************************************
+; Macro para insertar un caracter
+;***********************************************************************************				
 INSERTAR_C 		MACRO CARACTER
 				LOCAL INS_C
 				LOCAL IMP_SIG
@@ -195,12 +210,9 @@ IMP_SIG:		INC CANT_CAR
 INS_C:			POPA			
 				ENDM
 			
-PASAR_DW_DB	MACRO P_W
-			XOR AX, AX
-			MOV AX, P_W
-			MOV AH, 0
-			ENDM
-			
+;***********************************************************************************
+; Macro para eliminar una línea completa.
+;***********************************************************************************			
 SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
 				MOV   TOPROW, TROW
 				MOV   BOTROW, BROW
@@ -218,7 +230,6 @@ SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
 ; Inicio de Datos
 	.DATA
 
-
 CARACTER_NULL	DB	00H
 CARACTER		DB	 ' $'
 LONG_CAR		DW 	1
@@ -233,7 +244,7 @@ CADENA_AUX		DB 	2000 DUP (' '),'$'
 LONG_AUX		DW	2000
 S_2_INS			DB	'**********','$'
 LONG_STRING2	DW	10
-LIMPIA			DB	80 DUP (' ')							 ; cadena para limpiar línea.
+LIMPIA			DB	80 DUP (' ')							 	; cadena para limpiar línea.
 LONG_COP		DW	?
 SUMA			DW  ?
 COCIENTE		DW	?
@@ -267,20 +278,20 @@ CT				DB 	0
 FT				DB	0
 ;TABLA DE BIFUCACIÓN
 CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24
-TABLA      		DW  ARCHIVO              	             ; Tabla de bifurcación con sus cuatro opciones
+TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con sus cuatro opciones
 				DW  EDICION
 				DW  FORMATO
 				DW  AYUDA
 ;STRING_NULL		DB	40 DUP (0H), '$'
 
 ;PARTE GRÁFICA LOL
-TOPROW			DB	?					    	; Fila superior menu
-BOTROW			DB	?							; fila inferior menu
-LEFCOL			DB	?							; Columna izquierda menu
-ATTRIB			DB	?							; Atributo de pantalla
-ROW				DB	?							; Fila pantalla
-INGRESO			DB	?							; Guarda tecla ingresada
-SHADOW			DB	26	DUP(0DBH)				; Caracteres de sombreado
+TOPROW			DB	?					    					; Fila superior menu
+BOTROW			DB	?											; fila inferior menu
+LEFCOL			DB	?											; Columna izquierda menu
+ATTRIB			DB	?											; Atributo de pantalla
+ROW				DB	?											; Fila pantalla
+INGRESO			DB	?											; Guarda tecla ingresada
+SHADOW			DB	26	DUP(0DBH)								; Caracteres de sombreado
 MENU			DW  ?
 LONG_MEN		DB  ?
 NOMBRE			DB '        .TXT', 00H
@@ -293,19 +304,19 @@ M_ARCHIVO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
 				DB	0BAH, ' Salir    ', 0BAH
 				DB	0C8H, 10 DUP(0CDH), 0BCH
 				
-M_EDICION		DB	0C9H, 22 DUP(0CDH), 0BBH	; Dibuja menu
+M_EDICION		DB	0C9H, 22 DUP(0CDH), 0BBH					; Dibuja menu
 				DB	0BAH, ' Cortar               ', 0BAH
 				DB	0BAH, ' Copiar               ', 0BAH
 				DB	0BAH, ' Pegar                ', 0BAH
 				DB	0BAH, ' Copiar y Reemplazar  ', 0BAH
 				DB	0C8H, 22 DUP(0CDH), 0BCH
 
-M_FORMATO		DB	0C9H, 10 DUP(0CDH), 0BBH	; Dibuja menu
+M_FORMATO		DB	0C9H, 10 DUP(0CDH), 0BBH					; Dibuja menu
 				DB	0BAH, ' Negrita  ', 0BAH
 				DB	0BAH, ' Normal   ', 0BAH
 				DB	0C8H, 10 DUP(0CDH), 0BCH
 				
-M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH	; Dibuja menu
+M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH					; Dibuja menu
 				DB	0BAH, ' Manual de Ayuda  ', 0BAH
 				DB	0BAH, ' Creditos         ', 0BAH
 				DB	0C8H, 18 DUP(0CDH), 0BCH	
@@ -316,54 +327,54 @@ M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH	; Dibuja menu
 ; Imprime el menu de acuerdo a aja
 ;-------------------------------------------------------------------------------------------
 PAINT_MENU		PROC  NEAR
-				PUSHA						; guardar todos los registros
+				PUSHA											; guardar todos los registros
 				CALL  PAINT_SOMBRA
 				CALL  PAINT_CUADRO
-				POPA						; recuperar registros
+				POPA											; recuperar registros
 				RET
 PAINT_MENU		ENDP
 
 PAINT_SOMBRA	PROC  NEAR
 				MOV   AL, TOPROW
 				INC   AL
-				MOV	  DH, AL			; fila superior de sombra
-				LEA	  BP, SHADOW				; caracteres sombreados
-B20:			MOV	  AX, 1301H				; dibujar caja sombreada
-				MOV   BH, PAGINA			; PAGINA
-				MOV	  BL, 60H				; atributo
+				MOV	  DH, AL									; fila superior de sombra
+				LEA	  BP, SHADOW								; caracteres sombreados
+B20:			MOV	  AX, 1301H									; dibujar caja sombreada
+				MOV   BH, PAGINA								; PAGINA
+				MOV	  BL, 60H									; atributo
 				
 				MOV   AL, LEFCOL
 				INC   AL
-				MOVZX CX, LONG_MEN					; 19 caracteres
-				MOV	  DL, AL			; columna izq de sombra
+				MOVZX CX, LONG_MEN								; 19 caracteres
+				MOV	  DL, AL									; columna izq de sombra
 				INT	  10H
-				INC	  DH						; siguiente fila
+				INC	  DH										; siguiente fila
 				MOV   AL, BOTROW
 				ADD   AL, 2
-				CMP	  DH, AL			; se desplegaron todas las columnas?
-				JNE	  B20						; no, repetir
+				CMP	  DH, AL									; se desplegaron todas las columnas?
+				JNE	  B20										; no, repetir
 				RET
 PAINT_SOMBRA	ENDP
 
 PAINT_CUADRO	PROC  NEAR
 				MOV   BP, MENU
-				MOV	  DH, TOPROW				; fila
+				MOV	  DH, TOPROW								; fila
 B30:
-				MOV	  BH, PAGINA			;PAGINA
-				MOV   BL, 70H				; atributo: azul sobre blanco
-				MOV	  AX, 1300H				; solicitar menu de despliegue
-				MOVZX	  CX, LONG_MEN					; longitud de la linea
-				MOV	  DL, LEFCOL					; columna
-				PUSH  DX					; guarda el registro que contiene fila, columna
+				MOV	  BH, PAGINA								;PAGINA
+				MOV   BL, 70H									; atributo: azul sobre blanco
+				MOV	  AX, 1300H									; solicitar menu de despliegue
+				MOVZX	  CX, LONG_MEN							; longitud de la linea
+				MOV	  DL, LEFCOL								; columna
+				PUSH  DX										; guarda el registro que contiene fila, columna
 				INT   10H
 				MOVZX AX, LONG_MEN
-				ADD	  BP, AX					; siguiente linea del menu
-				POP	  DX						; recupera registro con fila, columna
-				INC	  DH						; siguiente fila
+				ADD	  BP, AX									; siguiente linea del menu
+				POP	  DX										; recupera registro con fila, columna
+				INC	  DH										; siguiente fila
 				MOV   AL, BOTROW
 				INC   AL 
-				CMP	  DH, AL			; se mostraron todas las filas?
-				JNE	  B30						; no, repetir
+				CMP	  DH, AL									; se mostraron todas las filas?
+				JNE	  B30										; no, repetir
 				RET
 PAINT_CUADRO	ENDP
 
@@ -397,122 +408,122 @@ AYUDA			ENDP
 ; Menus
 ;-------------------------------------------------------------------------------------------
 MOSTRAR_MENU	PROC  NEAR
-A20:			CALL  Q10CLEAR                	; Se limpia la pantalla.
-				CALL  PAINT_MENU				; Desplegar menu
+A20:			CALL  Q10CLEAR                					; Se limpia la pantalla.
+				CALL  PAINT_MENU								; Desplegar menu
 				MOV   AL, TOPROW
 				INC   AL
-				MOV   ROW, AL					; Fijar la fila en la primera opcion
-				MOV   ATTRIB, 10H				; fijar video inverso
-				CALL  D10DISPLY				; resaltar linea actual
-				CALL  C10INPUT					; leer opcion de menu
-				CMP	  INGRESO, 1BH			;  presiono esc?
-				JNE	  A20					; no, continuar
-FIN:			CALL  Q10CLEAR					; limpiar pantalla
+				MOV   ROW, AL									; Fijar la fila en la primera opcion
+				MOV   ATTRIB, 10H								; fijar video inverso
+				CALL  D10DISPLY									; resaltar linea actual
+				CALL  C10INPUT									; leer opcion de menu
+				CMP	  INGRESO, 1BH								;  presiono esc?
+				JNE	  A20										; no, continuar
+FIN:			CALL  Q10CLEAR									; limpiar pantalla
 				RET
 MOSTRAR_MENU	ENDP
 
 C10INPUT 		PROC  NEAR
-				PUSHA						; guardar registros
-C20:			MOV	  AH, 10H					; leer caracter de teclado
+				PUSHA											; guardar registros
+C20:			MOV	  AH, 10H									; leer caracter de teclado
 				INT	  16H
-				CMP	  AH, 50H					; cod rastreo flecha abajo?
+				CMP	  AH, 50H									; cod rastreo flecha abajo?
 				JE	  C30
-				CMP	  AH, 48H					; cod rastreo flecha arriba?
+				CMP	  AH, 48H									; cod rastreo flecha arriba?
 				JE	  C40
-				CMP	  AL, 0DH					; ascii enter?
+				CMP	  AL, 0DH									; ascii enter?
 				JE	  C100
 
-				CMP	  AL, 1BH					; ascii esc?
+				CMP	  AL, 1BH									; ascii esc?
 				JE	  C90
 				JMP	  C20
 C30:			MOV	  INGRESO, AL
-				MOV	  ATTRIB, 70H				; flecha-abajo, azul sobre blanco
-				CALL  D10DISPLY			; regresar linea ant a video normal
-				INC	  ROW						; fila siguiente
+				MOV	  ATTRIB, 70H								; flecha-abajo, azul sobre blanco
+				CALL  D10DISPLY									; regresar linea ant a video normal
+				INC	  ROW										; fila siguiente
 				MOV   AL, BOTROW
 				DEC   AL
-				CMP	  ROW, AL			; se paso de la ultima fila?
-				JBE	  C50						; no, ok
+				CMP	  ROW, AL									; se paso de la ultima fila?
+				JBE	  C50										; no, ok
 				MOV   AL, TOPROW
 				INC   AL
-				MOV	  ROW, AL		; si, iniciar fila
+				MOV	  ROW, AL									; si, iniciar fila
 				JMP	  C50
 C40:			MOV	  INGRESO, AL
-				MOV   ATTRIB, 70H			; flecha-arriba, azul sobre blanco
-				CALL  D10DISPLY			; regresar linea ant a video normal
-				DEC	  ROW					; fila anterior
+				MOV   ATTRIB, 70H								; flecha-arriba, azul sobre blanco
+				CALL  D10DISPLY									; regresar linea ant a video normal
+				DEC	  ROW										; fila anterior
 				MOV   AL, TOPROW
 				INC   AL
-				CMP	  ROW, AL		; se paso de la primera fila?
-				JAE	  C50					; no, ok
+				CMP	  ROW, AL									; se paso de la primera fila?
+				JAE	  C50										; no, ok
 				MOV   AL, BOTROW
 				DEC   AL
-				MOV	  ROW, AL		; si, iniciar fila
+				MOV	  ROW, AL									; si, iniciar fila
 C50:			MOV	  INGRESO, AL
-				MOV	  ATTRIB, 10H			; blanco sobre azul
-				CALL  D10DISPLY			; fijar linea nueva a video inverso
+				MOV	  ATTRIB, 10H								; blanco sobre azul
+				CALL  D10DISPLY									; fijar linea nueva a video inverso
 				JMP	  C20
 C100:  			MOV   ATTRIB, 17H
 				CALL  D10DISPLY
 				;CALL  OUT_M
 C90:
 				MOV	  INGRESO, AL
-				POPA						; recuperar registros
+				POPA											; recuperar registros
 				RET
 C10INPUT 		ENDP
 
 OUT_M   		PROC  NEAR
-				PUSHA							; guardar registros
-				MOVZX AX, ROW					; la fila indica que linea se seleccionó.
+				PUSHA											; guardar registros
+				MOVZX AX, ROW									; la fila indica que linea se seleccionó.
 				SUB	  AL, TOPROW
 				DEC   AX
-				IMUL  AX, 29					; multiplicar por longitud de linea
-				;LEA	  SI, MSJ_A					; para seleccionar mensaje correspondiente
+				IMUL  AX, 29									; multiplicar por longitud de linea
+				;LEA	  SI, MSJ_A								; para seleccionar mensaje correspondiente
 				ADD	  SI, AX
 				MOV   BP, SI
 				;CALL  MSJ_PRO
-				MOV   AH, 10H                 	;Se espera una tecla cualquiera para continuar.
+				MOV   AH, 10H                 					;Se espera una tecla cualquiera para continuar.
 				INT   16H
-				POPA							; recuperar registros
+				POPA											; recuperar registros
 				RET
 OUT_M   		ENDP
 ; ----------------------------------------------------------------------
 ;
 ; ----------------------------------------------------------------------
 D10DISPLY 		PROC  NEAR
-				PUSHA							; guardar registros
-				MOVZX AX, ROW					; la fila indica que linea fijar
+				PUSHA											; guardar registros
+				MOVZX AX, ROW									; la fila indica que linea fijar
 				SUB	  AL, TOPROW
 				MOVZX BX, LONG_MEN
-				IMUL  AX, BX				; multiplicar por longitud de linea
-				MOV	  SI, MENU					; para seleccionar fila del menu
+				IMUL  AX, BX									; multiplicar por longitud de linea
+				MOV	  SI, MENU									; para seleccionar fila del menu
 				ADD	  SI, AX
 				XOR   AX, AX
 				MOV   AL, LONG_MEN
 				SUB   AL, 2
-				MOV	  CX, AX						; longitud de cadena menu
-				MOV	  AX, 1300H					; solicita despliegue
-				MOVZX BX, ATTRIB				; pagina y atributo
-				MOV	  BP, SI						; caracter de cadena menu
+				MOV	  CX, AX									; longitud de cadena menu
+				MOV	  AX, 1300H									; solicita despliegue
+				MOVZX BX, ATTRIB								; pagina y atributo
+				MOV	  BP, SI									; caracter de cadena menu
 				INC   BP
-				MOV	  DH, ROW						; fila
+				MOV	  DH, ROW									; fila
 				MOV   AL, LEFCOL
 				INC   AL 
-				MOV	  DL, AL				; columna
+				MOV	  DL, AL									; columna
 				INT	  10H
-				POPA							; recuperar registros
+				POPA											; recuperar registros
 				RET
 D10DISPLY 		ENDP
 
 ; ----------------------------------------------------------------------
-; hola mundo.
+; 
 ; ----------------------------------------------------------------------
 Q10CLEAR 		PROC  NEAR
-				PUSHA							; guardar registros
+				PUSHA											; guardar registros
 				MOV	  AX, 0600H
-				MOV	  BH, 17H					; blanco sobre verde
-				MOV	  CX, 0200H				; pantalla completa
-				MOV	  DX, 164FH				; fila 24, col 79
+				MOV	  BH, 17H									; blanco sobre verde
+				MOV	  CX, 0200H									; pantalla completa
+				MOV	  DX, 164FH									; fila 24, col 79
 				INT	  10H
 				
 				MOV   AX, 1300H
@@ -532,7 +543,7 @@ Q10CLEAR 		PROC  NEAR
 				MOV   BL, 70H
 				LEA   BP, B_ABAJO
 				INT   10H
-				POPA							; recuperar registros
+				POPA											; recuperar registros
 				RET
 Q10CLEAR 		ENDP
 
@@ -669,9 +680,9 @@ SUPRIMIR		ENDP
 ELIM_STR		PROC NEAR
 				PUSHA
 				MOV CX, LONG_LINE
-CIC_ELI:		CALL SUPRIMIR
-				CMP CANT_CAR,0
-				JE F_CIC_ELI
+CIC_ELI:		CALL SUPRIMIR										; Se hace un suprimir hasta que
+				CMP CANT_CAR,0										; CX sea cero o se alcance el 
+				JE F_CIC_ELI										; inicio de la línea.
 				LOOP CIC_ELI
 F_CIC_ELI:		POPA
 				RET
@@ -688,15 +699,15 @@ ELIM_STR		ENDP
 ;----------------------------------------------------------------------------------------------
 CORTAR_CAD		PROC NEAR
 				PUSHA
-				DIVIDIR APUNTADOR_CAD, LONG_LINE
-				RESTAM APUNTADOR_CAD, RESIDUO
+				DIVIDIR APUNTADOR_CAD, LONG_LINE					; Se obtiene el inicio de la línea
+				RESTAM APUNTADOR_CAD, RESIDUO						
 				MOVM LONG_COP, APUNTADOR_CAD
-				LIMPIAR CADENA_COPIAR, LONG_CADP
+				LIMPIAR CADENA_COPIAR, LONG_CADP					; Se limpia la cadena donde se copiará la línea
 				MOV BX, APUNTADOR_CAD
 				COPIAR_CAD CADENA_DEST[BX], CADENA_COPIAR, LONG_CADP
 				;INC APUNTADOR_CAD
-				CALL ELIM_STR
-SALE_CUT:		POPA
+				CALL ELIM_STR										; Se elimina la línea actual, simulando
+SALE_CUT:		POPA												; la instrucción cortar.
 				RET
 CORTAR_CAD		ENDP
 
@@ -734,9 +745,9 @@ COPIA_CAD		ENDP
 PEGA_CAD		PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
-				MOV AX, LONG_STRING1
-				SUMAM CANT_CAR, LONG_CADP
-				CMP SUMA, AX
+				MOV AX, LONG_STRING1								; Si la cadena es mayor a la
+				SUMAM CANT_CAR, LONG_CADP							; longitud del String no 
+				CMP SUMA, AX										; realiza la acción.
 				JA SALE_PEGA
 				MOV BX, APUNTADOR_CAD
 				RESTAM CANT_CAR, APUNTADOR_CAD
@@ -746,8 +757,8 @@ PEGA_CAD		PROC NEAR
 				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
 				LIMPIAR CADENA_AUX, LONG_AUX
 				MOV AX, LONG_CADP
-				ADD CANT_CAR, AX
-				ADD APUNTADOR_CAD, AX
+				ADD CANT_CAR, AX									; Se incrementa el CANT_CAR y APUNTADOR_CAD 
+				ADD APUNTADOR_CAD, AX								; la cantidad de espacios correctos.
 SALE_PEGA:		POPA
 				RET
 PEGA_CAD		ENDP
@@ -762,13 +773,13 @@ PEGA_CAD		ENDP
 ;----------------------------------------------------------------------------------------------
 MOVC_IZ			PROC NEAR
 				PUSHA
-FIND_ASCII:		CMP APUNTADOR_CAD, 0
-				JE SALE_IZ
-				DEC APUNTADOR_CAD
-				DEC CT
+FIND_ASCII:		CMP APUNTADOR_CAD, 0								; Si está en primera línea y primera
+				JE SALE_IZ											; columna, no hace la acción.
+				DEC APUNTADOR_CAD									; Se decrementa el apuntador y la 
+				DEC CT												; columna.
 				MOV BX, APUNTADOR_CAD
-				CMP CADENA_DEST[BX], 00H
-				JE FIND_ASCII
+				CMP CADENA_DEST[BX], 00H							; Si encuentra NULL, sigue hasta encontrar
+				JE FIND_ASCII										; un ASCII
 SALE_IZ:		POPA
 				RET
 MOVC_IZ			ENDP
@@ -784,23 +795,21 @@ MOVC_IZ			ENDP
 ;----------------------------------------------------------------------------------------------
 MOVC_DER		PROC NEAR
 				PUSHA
-				MOVM APUNTADOR_CAD, COP_APUNT_CAD
-BUSCAR_ASCII:	MOV AX, LONG_STRING1
+				MOVM APUNTADOR_CAD, COP_APUNT_CAD					; Si está al final del String o del 
+BUSCAR_ASCII:	MOV AX, LONG_STRING1								; CANT_CAR, no realiza la acción.
 				CMP COP_APUNT_CAD, AX
-				JE REG_APUNT
+				JE SALE_DER
 				MOV AX, CANT_CAR
 				CMP COP_APUNT_CAD, AX
-				JE REG_APUNT
+				JE SALE_DER
 				INC COP_APUNT_CAD
 				INC CT
 				MOV BX, COP_APUNT_CAD
-				CMP CADENA_DEST[BX], 00H
-				JE BUSCAR_ASCII
+				CMP CADENA_DEST[BX], 00H							; Si encuentra NULL, sigue hasta encontrar
+				JE BUSCAR_ASCII										; un ASCII.
 				MOVM COP_APUNT_CAD, APUNTADOR_CAD
 SALE_DER:		POPA
 				RET
-REG_APUNT:		MOVM APUNTADOR_CAD, APUNTADOR_CAD
-				JMP SALE_DER
 MOVC_DER		ENDP
 
 ;----------------------------------------------------------------------------------------------
@@ -814,19 +823,19 @@ MOVC_DER		ENDP
 DISTANCIA_MENOR PROC NEAR
 				PUSHA
 				MOVM APUNTADOR_CAD, COP_APUNT_CAD
-MOV_IZ:			CMP CONT_TAB,5
-				JE C_DER
+MOV_IZ:			CMP CONT_TAB,5										; Al llegar a 5 reconoce que no es la
+				JE C_DER											; distancia más cercana.
 				INC COP_APUNT_CAD
 				INC CONT_TAB
 				INC CT
 				MOV BX, COP_APUNT_CAD
 				CMP CADENA_DEST[BX], 00H
 				JE MOV_IZ
-SALE_MEN:		MOVM COP_APUNT_CAD, APUNTADOR_CAD
+SALE_MEN:		MOVM COP_APUNT_CAD, APUNTADOR_CAD					; Se posiciona correctamente el apuntador.
 				MOV CONT_TAB, 0
 				POPA
 				RET
-C_DER:			SUB CT, 5
+C_DER:			SUB CT, 5											; Se regresa las columnas avanzadas a la inicial.
 				DEC COP_APUNT_CAD
 				DEC CT
 				MOV BX, COP_APUNT_CAD
@@ -938,34 +947,27 @@ INS_NULL:		INSERTAR_CAD CARACTER, 1
 				JMP SALE_TAB
 TABULADOR		ENDP
 
-INSERTAR_NULL	PROC NEAR
-				PUSHA
-				MOV AX, APUNTADOR_CAD								; Si está al final del String, no ejecuta la acción.
-				CMP AX, LONG_STRING1
-				JE SALE_NULL
-				LIMPIAR CADENA_AUX, LONG_AUX
-				RESTAM CANT_CAR, APUNTADOR_CAD
-				MOV BX, APUNTADOR_CAD
-				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
-				COPIAR_CAD CARACTER_NULL, CADENA_DEST[BX], LONG_COP
-				ADD BX, LONG_COP
-				COPIAR_CAD CADENA_AUX, CADENA_DEST[BX], LONG_COP
-				LIMPIAR CADENA_AUX, LONG_AUX
-				INC CANT_CAR
-SALE_NULL:		POPA
-				RET
-INSERTAR_NULL	ENDP
-
-
+;----------------------------------------------------------------------------------------------
+; Procedimiento para situar el apuntador y cursor en la primera columna de la fila actual.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;----------------------------------------------------------------------------------------------
 HOME_STR		PROC NEAR
 				PUSHA
 				DIVIDIR APUNTADOR_CAD, LONG_LINE
 				RESTAM APUNTADOR_CAD, RESIDUO
 				MOVM LONG_COP, APUNTADOR_CAD
+				MOV CX, RESIDUO
+				SUB CT, CL
 				RET
 				POPA
 HOME_STR		ENDP
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para situar el apuntador y cursor en la última columna de la fila actual.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;----------------------------------------------------------------------------------------------
 END_STR			PROC NEAR
 				PUSHA
 				RESTAM LONG_STRING1, APUNTADOR_CAD
@@ -977,12 +979,21 @@ END_STR			PROC NEAR
 				SUMAM APUNTADOR_CAD, LONG_COP
 				MOVM SUMA, APUNTADOR_CAD
 				DEC APUNTADOR_CAD
+				MOV CX, APUNTADOR_CAD
+				MOV CT, CL
 SALE_END:		POPA
 				RET
 I_CANT_CAR:		MOVM CANT_CAR, APUNTADOR_CAD
+				MOV CX, CANT_CAR
+				ADD CT, CL
 				JMP SALE_END
 END_STR			ENDP	
 
+;----------------------------------------------------------------------------------------------
+; Procedimiento para cambiar la intensidad de la fila en donde se encuentra el cursor.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;----------------------------------------------------------------------------------------------
 NEGRITAS		PROC NEAR
 				PUSHA
 				MOV DL, 00010111B
@@ -1009,12 +1020,11 @@ AC_NEGRITAS:	OR DL, 00001000B
 				JMP IN_NEG				
 NEGRITAS		ENDP
 
-APUNT_CUR		PROC NEAR
-				DIVIDIR APUNTADOR_CAD, LONG_LINE
-				SET_CUR PAGINA, DL, AL
-				RET
-APUNT_CUR		ENDP
-
+;----------------------------------------------------------------------------------------------
+; Procedimiento para insertar un caracter nullo.
+; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
+;				LONG_LINE: largo de la línea. 80 caracteres.
+;----------------------------------------------------------------------------------------------
 INSERTAR_CNULL	PROC NEAR
 				INSERTAR_CAD CARACTER_NULL, 1 
 				RET
@@ -1024,7 +1034,6 @@ INSERTAR_CNULL	ENDP
 ; Necesita pasar a STRING, la cadena a renderizar, y en CANT_CAR, cantidad de caracteres de
 ; de dicha cadena.
 ;--------------------------------------------------------------------------------------------
-
 REND_CAD		PROC  NEAR
 				PUSHA
 				MOV   APUNTADOR_CAD, 0
@@ -1047,6 +1056,11 @@ SUP:			CALL  SUPRIMIR
 				JMP   CONTINUAR
 REND_CAD		ENDP
 
+;--------------------------------------------------------------------------------------------
+; Procedimiento que identifica el final de la línea y determina si es posible imprimir la 
+; palabra en ese espacio, si no es así, imprime NULL y un espacio en blanco al final de la
+; línea y pasa lo que se escribía a la siguiente línea.
+;--------------------------------------------------------------------------------------------
 BAJAR_P			PROC  NEAR
 				CMP   CHAR, 32
 				JE	  IMP
@@ -1113,7 +1127,6 @@ RECORRER1:		MOV   BX, CANT_CAR
 				JE    FIN2
 				MOV	  AL, [SI]
 				MOV   CHAR, AL
-				;CALL  APUNT_CUR
 				GET_CUR 0
 				CMP	  CHAR, 13
 				JE	  ENTERR
@@ -1212,7 +1225,6 @@ VUELVE:	   		CALL CLEAN_BUFF
 				;MOVM   FILA_ACTUAL, FT
 				;MOVM   COL_ACTUAL, CT
 				SET_APUNTADOR FT, CT
-				;CALL APUNT_CUR
 				CALL  GET_ET
 				CMP	  RASTREO, 0
 				JE	  VUELVE
@@ -1244,49 +1256,6 @@ MAIN PROC FAR
 		INICIO
 		CALL  Q10CLEAR
 		SET_CUR PAGINA, 0, 2
-		;DESP CADENA_DEST
-		;CALL INSERTAR_C
-		;INSERTAR_CAD S_2_INS, LONG_STRING2
-		;CALL BACKSPACE
-		;CALL SUPRIMIR
-		;CALL CORTAR_CAD
-		;CALL TABULADOR
-		;CALL MOVC_UP
-		;CALL MOVC_DOWN
-		;CALL MOVC_IZ
-		;CALL BACKSPACE
-		;CALL SUPRIMIR
-		;CALL COPIA_CAD
-		;DESP CADENA_COPIAR
-		;INSERTAR_CAD CARACTER, LONG_CAR
-		;DESP CADENA_PRUEBA
-		;COPIAR_CAD CADENA_PRUEBA, CADENA_DEST, 95
-		;MOV APUNTADOR_CAD, 5
-		;CALL CORTAR_CAD
-		;CALL PEGA_CAD
-		;CALL TABULADOR
-		;MOV APUNTADOR_CAD, 0
-		;SET_CUR 00, 00, 00
-		;CALL NEGRITAS
-		;SET_CUR 00, 00, 24
-		;MOV AH, 09H
-		;MOV AL, 2AH
-		;MOV BH, 0
-		;MOV BL, 01011010B
-		;MOV CX, 5
-		;INT 10H
-		;CALL MOVC_UP
-		;CALL HOME_STR
-		;CALL END_STR
-		;CALL MOVC_IZ
-		;CALL MOVC_DER
-		;CALL INSERTAR_C
-		;MOVM CANT_CARP, CANT_CAR
-		;CALL REND_CAD
-		;CALL SET_STR
-		;DESP CADENA_DEST
-		;DESP CADENA_PRUEBA
-		;GET_CUR 0
 		SET_APUNTADOR DH, DL
 		CALL FLUJO
 
