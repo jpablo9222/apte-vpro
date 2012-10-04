@@ -348,6 +348,9 @@ T_EDICION		DW  CORTAR_CAD
 T_ARCHIVO		DW  ABRIR_AR
 				DW  GUARDAR_AR
 				DW  SALIR_P
+				
+T_AYUDA			DW  MANUAL
+				DW  CRED
 ;----------------------------------------------------------------------------------------------
 ; Manejo de archivos y cerrar programa
 ;----------------------------------------------------------------------------------------------
@@ -388,7 +391,36 @@ M_AYUDA			DB	0C9H, 18 DUP(0CDH), 0BBH					; Dibuja menu
 				DB	0BAH, ' Manual de Ayuda  ', 0BAH
 				DB	0BAH, ' Creditos         ', 0BAH
 				DB	0C8H, 18 DUP(0CDH), 0BCH	
-
+				
+CREDITOS		DB  0C9H, 20 DUP(0CDH), 0BBH				;22
+				DB  0BAH, '      Creditos      ', 0BAH
+				DB  0BAH, '                    ', 0BAH
+				DB  0BAH, '    Programadores   ', 0BAH
+				DB  0BAH, '                    ', 0BAH
+				DB  0BAH, ' Juan Pablo Argueta ', 0BAH
+				DB  0BAH, '   Jonathan Lopez   ', 0BAH
+				DB  0BAH, '                    ', 0BAH
+				DB  0BAH, '    PRESIONE ESC    ', 0BAH
+				DB  0BAH, '     PARA SALIR     ', 0BAH
+				DB  0C8H, 20 DUP(0CDH), 0BCH
+				
+MAN_AYUDA		DB  0C9H, 69 DUP(0CDH), 0BBH
+				DB  0BAH, '                           Manual de Ayuda                           ', 0BAH
+				DB  0BAH, '                                                                     ', 0BAH
+				DB  0BAH, ' Teclas de Funcion Especial:                                         ', 0BAH
+				DB  0BAH, '                                                                     ', 0BAH
+				DB  0BAH, ' Backspace: Borra un dato a la izquierda del cursor.                 ', 0BAH
+				DB  0BAH, ' Suprimir: Borra un dato a la derecha del cursos.                    ', 0BAH
+				DB  0BAH, ' Enter: Baja una linea y posiciona el cursor en la primera columna.  ', 0BAH
+				DB  0BAH, ' Re Pag: Cambia de hoja a una hoja anterior.                         ', 0BAH
+				DB  0BAH, ' Av Pag: Cambia de hoja a la hoja siguiente.                         ', 0BAH
+				DB  0BAH, ' Inicio: Posiciona el cursor en la primera columna.                  ', 0BAH
+				DB  0BAH, ' Fin: Posiciona el cursor en la ultima columna.                      ', 0BAH
+				DB  0BAH, '                                                                     ', 0BAH
+				DB  0BAH, ' PRESIONE ESC PARA SALIR                                             ', 0BAH
+				DB  0C8H, 69 DUP(0CDH), 0BCH
+				
+				
 	.CODE
 
 FARCHIVO		PROC  NEAR
@@ -417,8 +449,38 @@ FFORMATO		ENDP
 
 
 FAYUDA			PROC  NEAR
+				XOR   BX, BX
+				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
+				SUB	  BL, TOPROW
+				DEC   BX
+				SHL	  BX, 01
+				CALL  [T_AYUDA+BX]
 				RET
 FAYUDA			ENDP
+
+CRED			PROC  NEAR
+				SET_SP 6, 16, 28, 22, CREDITOS 
+				CALL  Q10CLEAR                					; Se limpia la pantalla.
+				CALL  PAINT_CUADRO								; Desplegar menu
+A2000:			MOV   AH, 10H
+				INT	  16H
+				CMP	  AL, 1BH									
+				JNE	  A2000										; no, continuar
+				CALL  Q10CLEAR	
+				RET
+CRED			ENDP
+
+MANUAL			PROC  NEAR
+				SET_SP 3, 17, 5, 71, MAN_AYUDA
+				CALL  Q10CLEAR                					; Se limpia la pantalla.
+				CALL  PAINT_CUADRO								; Desplegar menu
+A200:			MOV   AH, 10H
+				INT	  16H
+				CMP	  AL, 1BH									
+				JNE	  A200										; no, continuar
+				CALL  Q10CLEAR	
+				RET
+MANUAL 			ENDP
 	
 ABRIR_AR		PROC NEAR
 				ABRIR_A NOMBRE
