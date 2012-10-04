@@ -224,13 +224,13 @@ SET_SP			MACRO TROW, BROW, LCOL, LM, MEN
 ;***********************************************************************************
 ; Macro para crear un archivo.
 ;***********************************************************************************
-CREAR_A		MACRO NOM_ARCHIVO
-			MOV	AH, 3CH			; PETICION
-			MOV	CX, 00			; ATRIBUTO NORMAL
-			LEA DX, MANEJ	; CADENA ASCIIZ
-			INT 21H				; LLAMA AL DOS
-			MOV	MANEJ, AX		; GUARDA EL MANEJADOR
-			ENDM
+CREAR_A	MACRO NOM_ARCHIVO
+				MOV	AH, 3CH			; PETICION
+				MOV	CX, 00			; ATRIBUTO NORMAL
+				LEA DX, NOM_ARCHIVO	; CADENA ASCIIZ
+				INT 21H				; LLAMA AL DOS
+				MOV	MANEJ, AX		; GUARDA EL MANEJADOR
+				ENDM
 				
 ;***********************************************************************************
 ; Macro para abrir un archivo previamente guardado
@@ -254,11 +254,11 @@ LEER_A	     	MACRO MANEJADOR
 				INT 21H
 				ENDM			
 				
-GUARDAR_A		MACRO MANEJADOR
-				MOV	AH, 3EH			
+CERRAR_A	MACRO MANEJADOR
+				MOV	AH, 3EH	; PETICION
 				MOV BX, MANEJADOR
 				INT	21H
-				ENDM		
+				ENDM	
 			
 	.MODEL SMALL
 	.STACK 2048
@@ -267,7 +267,7 @@ GUARDAR_A		MACRO MANEJADOR
 ; Inicio de Datos
 	.DATA
 
-NOMBRE			DB	'a1.txt',00H
+NOMBRE			DB	'Proy.txt',00H
 MANEJ			DW	  	?
 TEXT_P			DB	1680 DUP (?), '$'
 CARACTER_NULL	DB	00H
@@ -492,12 +492,12 @@ ABRIR_AR		PROC NEAR
 ABRIR_AR		ENDP
 
 GUARDAR_AR		PROC NEAR
-				GUARDAR_A MANEJ
+				CERRAR_A MANEJ
 				RET
 GUARDAR_AR		ENDP
 				
 CERRAR_AR		PROC NEAR
-				
+				CALL GUARDAR_AR
 				MOV   AX, 4C00H		;salida al DOS
 				INT   21H
 				RET
@@ -958,13 +958,14 @@ SALE_SUPR:		POPA
 SUPR_NULL:		MOV CADENA_DEST[BX], 01H								; Se sustituye el primer caracter por uno cualquiera.
 CONT_N:			MOV AX, APUNTADOR_CAD
 				CMP AX, CANT_CAR									; Se corrobora que no haya alcanzado el final del String.
-				JE SALE_SUPR
+				JAE SALE_SUPR
 				INC APUNTADOR_CAD
 				MOV BX, APUNTADOR_CAD
 				MOV AL, CADENA_DEST[BX]								; Se compara en búsqueda de más NULL.
 				CMP AL, 00H
 				JE CONT_N
 				CALL BACKSPACE
+				INC FT
 				JMP SALE_SUPR
 SUPRIMIR		ENDP
 
@@ -1561,8 +1562,6 @@ MAIN PROC FAR
 		;SET_APUNTADOR DH, DL
 		CALL FLUJO
 
-		MOV   AX, 4C00H		;salida al DOS
-		INT   21H
 MAIN 	ENDP
 ;-----------------------------------------------------------------------------------------------------
 		END MAIN
