@@ -291,7 +291,7 @@ LEFCOL			DB	?											; Columna izquierda menu
 ATTRIB			DB	?											; Atributo de pantalla
 ROW				DB	?											; Fila pantalla
 INGRESO			DB	?											; Guarda tecla ingresada
-SHADOW			DB	26	DUP(0DBH)								; Caracteres de sombreado
+SHADOW			DB	40	DUP(0DBH)								; Caracteres de sombreado
 MENU			DW  ?
 LONG_MEN		DB  ?
 NOMBRE			DB '        .TXT', 00H
@@ -398,7 +398,7 @@ FORMATO			PROC  NEAR
 FORMATO			ENDP
 
 AYUDA			PROC  NEAR
-				SET_SP 1, 4, 34, 18, M_AYUDA
+				SET_SP 1, 4, 32, 20, M_AYUDA
 				CALL  MOSTRAR_MENU
 				RET
 AYUDA			ENDP
