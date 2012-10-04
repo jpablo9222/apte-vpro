@@ -404,7 +404,12 @@ ARCHIVO			PROC  NEAR
 ARCHIVO			ENDP
 
 FARCHIVO		PROC  NEAR
-				
+				XOR   BX, BX
+				MOVZX BX, ROW					; la fila indica que linea se seleccionó.
+				SUB	  BL, TOPROW
+				DEC   BX
+				SHL	  BX, 01
+				CALL  [T_EDICION+BX]
 				RET
 FARCHIVO		ENDP
 
@@ -423,7 +428,6 @@ FEDICION		PROC  NEAR
 				SHL	  BX, 01
 				CALL  [T_EDICION+BX]
 				RET
-
 FEDICION		ENDP
 
 FORMATO			PROC  NEAR
