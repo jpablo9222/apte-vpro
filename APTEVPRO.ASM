@@ -321,6 +321,7 @@ RASTREO			DB 	0
 CT				DB 	0
 FT				DB	0
 FUN				DB  ?
+B_INSERT		DB 	0
 
 ;TABLA DE BIFUCACIÓN
 CAD_TABLA  		DB  3BH, 0, 3CH, 2, 3DH, 4, 3EH, 6, 47H, 8, 53H, 10, 52H, 12, 51H, 14, 49H, 16, 50H, 18, 4BH, 20, 4DH, 22, 48H, 24, 4FH, 26
@@ -1324,6 +1325,22 @@ AC_NEGRITAS:	INC B_NEGRITAS
 				JMP IN_NEG				
 NEGRITAS		ENDP
 
+INSERT			PROC NEAR
+				PUSHA
+				CMP B_INSERT, 0
+				JNE NORMAL
+				MOV AH, 01H
+				MOV CH, 00
+				MOV CL, 5
+				INT 10H
+SAL_INS:		POPA
+				RET
+NORMAL:			MOV AH, 01H
+				MOV CH, 4
+				MOV CL, 5
+				INT 10H
+				JMP SAL_INS
+INSERT			ENDP
 ;----------------------------------------------------------------------------------------------
 ; Procedimiento para insertar un caracter nullo.
 ; Parámetros: 	APUNTADOR_CAD: para conocer la posición en el String. 
