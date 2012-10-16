@@ -56,6 +56,10 @@ PART6: 	ENDM
 .STACK 64
 .386
 .DATA 		; Definición de datos.
+MSJM	DB	0C9H, 40 DUP(0CDH), 0BBH
+		DB	0BAH, ' 1. ACTIVACIÓN BITS ALTOS Y BAJOS ', 0BAH
+		DB	0BAH, ' 2. CORRIMIENTO DE LEDS           ', 0BAH
+		DB	0BAH, ' 3. SALIR                         ', 0BAH
 C1		DB	?
 C2		DB	?
 C3		DB	?
@@ -68,16 +72,27 @@ TABLA 	DW	OP1
 .CODE ; Inicio de código.
 ; PROCEDIMIENTOS
 
+TECLADO PROC
+		MOV	AH, 06H			; Petición directa a consola
+		MOV	DL, 0FFH		; Entrada del teclado
+		INT	21H
+		RET
+TECLADO ENDP
+
 OP1	PROC NEAR
-		WRITEP 11110000B, 03F8H
+CICLO:	WRITEP 11110000B, 03F8H
 		DELAY 20 ; Ocasiona un retardo
 		WRITEP 00001111B, 03F8H
 		DELAY 20 ; Ocasiona un retardo		
+		CALL TECLADO
+		JZ CICLO
+		CMP AL, 27
+		JNE CICLO
 		RET
 OP1	ENDP
 
 OP2	PROC NEAR
-		WRITEP 10000001B, 03F8H
+CICOP2:	WRITEP 10000001B, 03F8H
 		DELAY 20 ; Ocasiona un retardo
 		WRITEP 01000010B, 03F8H
 		DELAY 20 ; Ocasiona un retardo
@@ -85,6 +100,10 @@ OP2	PROC NEAR
 		DELAY 20 ; Ocasiona un retardo
 		WRITEP 00011000B, 03F8H
 		DELAY 20 ; Ocasiona un retardo
+		CALL TECLADO
+		JZ CICOP2
+		CMP AL, 27
+		JNE CICOP2
 		RET
 OP2	ENDP
 
@@ -97,10 +116,6 @@ MAIN PROC
 MOV AX, @data     ; Inicialización.
 MOV DS, AX
 INITP ; Inicializa Puerto serial COM1
-;REG:
-;WRITEP 01010101B, 03F8H ; Macro: escribe 10101010 en el puerto COM1
-;DELAY 20 ; Ocasiona un retardo
-JMP REG ; es un ciclo infinito. Salir con Ctrl-C.
 SALIR:
 MOV AH, 4CH    ; Salida al DOS.
 INT 21H
