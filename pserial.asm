@@ -56,16 +56,23 @@ PART6: 	ENDM
 .STACK 64
 .386
 .DATA 		; Definición de datos.
-C1	DB	?
-C2	DB	?
-C3	DB	?
-C4	DB	?
+C1		DB	?
+C2		DB	?
+C3		DB	?
+C4		DB	?
+TABLA 	DW	OP1
+		DW	OP2
+		DW	OP3
 
 ;*************************************************
 .CODE ; Inicio de código.
 ; PROCEDIMIENTOS
 
 OP1	PROC NEAR
+		WRITEP 11110000B, 03F8H
+		DELAY 20 ; Ocasiona un retardo
+		WRITEP 00001111B, 03F8H
+		DELAY 20 ; Ocasiona un retardo		
 		RET
 OP1	ENDP
 

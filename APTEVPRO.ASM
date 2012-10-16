@@ -331,7 +331,7 @@ TABLA      		DW  ARCHIVO              	             		; Tabla de bifurcación con
 				DW  AYUDA
 				DW  HOME
 				DW  DEL
-				DW  INSRT
+				DW  
 				DW  PGDN
 				DW  PGUP
 				DW  F_AB
@@ -503,6 +503,11 @@ CERRAR_AR		PROC NEAR
 				INT   21H
 				RET
 CERRAR_AR		ENDP
+
+INSRT			PROC NEAR
+				CALL INSERT
+				RET
+INSRT			ENDP
 				
 ;-------------------------------------------------------------------------------------------
 ; Imprime el menu de acuerdo a aja
@@ -591,6 +596,7 @@ SALIR_P			PROC NEAR
 				MOV		CX, 0000H				; pantalla completa
 				MOV		DX, 184FH				; fila 24, col 79
 				INT		10H
+				CERRAR_A MANEJ
 				MOV   AX, 4C00H		;salida al DOS
 				INT   21H
 				RET
@@ -619,9 +625,6 @@ DEL				PROC NEAR
 				RET
 DEL				ENDP
 
-INSRT			PROC NEAR
-				RET
-INSRT			ENDP
 
 PGDN			PROC NEAR
 				MOV BX, 0
@@ -1412,6 +1415,28 @@ REG:			ADD   SI, 79
 				ADD   APUNTADOR_CAD, 79
 				JMP   IMP
 BAJAR_P			ENDP
+
+INSERT			PROC NEAR
+				PUSHA
+				CMP B_INSERT, 0
+				JNE NORMAL
+				DEC B_INSERT
+				MOV AH, 01H
+				MOV CH, 00
+				MOV CL, 5
+				INT 10H
+				MOV BX, APUNTADOR_CAD
+				RESTAM CANT_CAR, APUNTADOR_CAD
+				COPIAR_CAD CADENA_DEST[BX], CADENA_AUX, LONG_COP
+SAL_INS:		POPA
+				RET
+NORMAL:			INC B_INSERT
+				MOV AH, 01H
+				MOV CH, 4
+				MOV CL, 5
+				INT 10H
+				JMP SAL_INS
+INSERT			ENDP
 
 HAY_ENTER		PROC  NEAR		
 				DESPC 32
