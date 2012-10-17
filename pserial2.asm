@@ -106,6 +106,7 @@ SALTOS		PROC  NEAR
 			MOV   BL, OPCION 	; obtener el codigo
 			SHL	  BX, 01	  	; mult. Por 2
 			CALL [TABLA+BX] 	; salta a la tabla
+			RET
 SALTOS		ENDP
 
 ;-----------------------------------------------------------------------------------------------------
@@ -152,6 +153,7 @@ CICLO:	WRITEP 11110000B, 03F8H
 		JZ CICLO
 		CMP AL, 27
 		JNE CICLO
+		WRITEP 00000000B, 03F8H
 		RET
 OP1		ENDP
 
@@ -171,6 +173,7 @@ CICOP2:	WRITEP 10000001B, 03F8H
 		JZ    CICOP2
 		CMP   AL, 27
 		JNE   CICOP2
+		WRITEP 00000000B, 03F8H
 		RET
 OP2		ENDP
 
@@ -186,9 +189,6 @@ MAIN 	PROC  FAR
 		MOV   AX, @data     ; Inicialización.
 		MOV   DS, AX
 		INITP ; Inicializa Puerto serial COM1
-;LOL:	WRITEP 10101010B, 03F8H
-;		DELAY 20
-;		JMP   LOL
 ASD: 	WRITEP 00000000B, 03F8H
 		DESP LINE
 		DESP MSJM
