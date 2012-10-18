@@ -1,24 +1,50 @@
-;*************************************************
-; PRUEBA MANEJO DE PUERTO SERIAL 1
-;*************************************************
+TITLE pserial3
+;-------------------------------------------------------------------------------------------
+; Universidad del Valle de Guatemala
+; Taller de Assembler
+; Sección: 10
+; Laboratorio 8
+; pserial3.ASM
+; Descripción: 
+;				Programa que conecta a un circuito mediante puerto serial (COM1).
+;				Permite activar los LEDS de un circuito enviandole información
+;				a través del Puerto Serial. 
+; Autor:  	Juan Pablo Argueta			  	Carné: 11033
+;  			Jonathan López                  Carné: 11106
+; Fecha de creación: 16 de septiembre del 2012
+; Revisiones: 6
+; 17 de septiembre del 2012
+;-------------------------------------------------------------------------------------------
+
+;***********************************************************************************
 ; MACROS
-;*************************************************
+;***********************************************************************************
+
+;***********************************************************************************
+; Inicializa el Puerto Serial (COM1) con determinada configuración.
+;***********************************************************************************
 INITP 	MACRO ; Inicializar puerto serial
 		MOV   AH, 00H 	; Llama función inicializar
 		MOV   AL, 03H 	; Indica parámetros: 110 baudios, ninguna  
-					; paridad, 1 bit de parada, palabra de 8 bits
+						; paridad, 1 bit de parada, palabra de 8 bits
 		MOV   DX, 3F8H 	; Determina el número  del puerto COM1
 		INT   14H  		; Llama interrupción
 		ENDM
-;*************************************************
-WRITEP 	MACRO B, P 	; Escribir en Puerto B = Dato, P = Puerto
+
+;***********************************************************************************
+; Envía un Byte dado por el parámetro B hacia el puerto P.
+;***********************************************************************************
+WRITEP 	MACRO B, P 			; Escribir en Puerto B = Dato, P = Puerto
 		XOR   AX, AX 		; Mover 0 (cero) a registro AX
 		MOV   AL, B 		; Especificar Dato de salida
 		MOV   DX, P 		; Indicar Puerto de salida
 		OUT   DX, AL 		; Realizar instrucción OUT
 		ENDM
-;*************************************************               
-DELAY 	MACRO NUM 	; Producir un retardo
+		
+;***********************************************************************************
+; Produce un retardo.
+;***********************************************************************************		
+DELAY 	MACRO NUM 	
 		LOCAL PART1
 		LOCAL PART2
 		LOCAL PART3
@@ -59,12 +85,15 @@ DESP		MACRO CADENA
 			INT 21H
 			ENDM
 			
-;*************************************************
-; VARIABLES
-;*************************************************
+;***********************************************************************************
+
 .MODEL COMPACT
 .STACK 64
 .386
+
+;***********************************************************************************
+; Variables
+;***********************************************************************************
 .DATA 		; Definición de datos.
 ENTR1   DB    	0DH,0AH,'$'
 LINE	DB  80 DUP(0CDH), 0DH, 0AH, '$'	
@@ -84,9 +113,14 @@ TABLA 	DW	OP1
 		DW	OP2
 		DW	OP3
 
-;*************************************************
-.CODE ; Inicio de código.
-; PROCEDIMIENTOS
+;***********************************************************************************
+; Inicio del Código
+;***********************************************************************************
+.CODE
+
+;***********************************************************************************
+; Procedimientos
+;***********************************************************************************
 
 ;-------------------------------------------------------------------------------------------
 ; Deja un espacio para ordenar mejor la interfaz
@@ -184,7 +218,10 @@ OP3		PROC  NEAR
 		JMP   SALIR
 		RET
 OP3		ENDP
-;*************************************************
+
+;-----------------------------------------------------------------------------------------------------
+; Procedimiento Principal, Maneja el Flujo Lógico del Programa
+;-----------------------------------------------------------------------------------------------------
 MAIN 	PROC  FAR
 		MOV   AX, @data     ; Inicialización.
 		MOV   DS, AX
@@ -200,6 +237,6 @@ ASD: 	WRITEP 00000000B, 03F8H
 SALIR:	MOV   AH, 4CH    ; Salida al DOS.
 		INT   21H
 MAIN 	ENDP
-		
+
+;-----------------------------------------------------------------------------------------------------	
 		END MAIN
-;*************************************************
